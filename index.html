@@ -34,8 +34,7 @@
     --accent-soft:#ecefe9;
     --sans: Arial,"Helvetica Neue",Helvetica,sans-serif;
     --page: 62rem;      /* sheet width  */
-    --measure: 37rem;   /* text column  */
-    --gutter: 4.5rem;   /* annotation gutter */
+    --measure: 42rem;   /* text column  */
   }
   @media (prefers-color-scheme: dark){
     :root:where(:not([data-theme="light"])){
@@ -66,15 +65,9 @@
   .sheet{max-width:var(--page); margin:0 auto; padding:0 32px}
   @media(max-width:640px){ .sheet{padding:0 22px} }
 
-  /* ---------------- annotation grid ---------------- */
-  .row{display:grid; grid-template-columns:var(--gutter) minmax(0,1fr); gap:0 2.25rem}
-  @media(max-width:760px){ .row{grid-template-columns:1fr; gap:0} }
+  /* ---------------- column ---------------- */
+  .row{display:block}
   .col{max-width:var(--measure)}
-  .mark{
-    font-size:.7rem; letter-spacing:.18em; color:var(--accent);
-    padding-top:.55rem; font-weight:700; font-variant-numeric:tabular-nums;
-  }
-  @media(max-width:760px){ .mark{padding:0 0 .5rem} }
 
   /* ---------------- nav ---------------- */
   nav{
@@ -145,15 +138,14 @@
     border-top:1px solid var(--line); margin-top:.7rem; max-width:var(--measure);
   }
   /* portrait sits in the single column, caption directly beneath it */
-  .portrait-plate{max-width:23rem; margin-left:calc(var(--gutter) + 2.25rem)}
-  @media(max-width:760px){ .portrait-plate{margin-left:0} }
+  .portrait-plate{max-width:23rem}
   .portrait-plate img{aspect-ratio:2/3; object-fit:cover}
 
   /* ---------------- sections ---------------- */
   section{padding:3.6rem 0; border-top:1px solid var(--line)}
   h2{
-    font-size:.74rem; letter-spacing:.2em; text-transform:uppercase;
-    font-weight:700; margin:0 0 1.6rem; color:var(--text-faint);
+    font-size:1.02rem; letter-spacing:.13em; text-transform:uppercase;
+    font-weight:700; margin:0 0 1.7rem; color:var(--accent);
   }
   .stmt{font-size:1.16rem; line-height:1.6; letter-spacing:-.012em; margin:0 0 1.5rem; color:var(--text)}
   p{margin:0 0 1.05rem; color:var(--text-soft)}
@@ -206,6 +198,75 @@
   ol.record .what{font-weight:700; display:block; line-height:1.45}
   ol.record .where{font-size:.93rem; color:var(--text-soft); display:block}
   ol.record .note{font-size:.9rem; color:var(--text-faint); display:block; margin-top:.35rem}
+
+  /* ---------------- journals list ---------------- */
+  ul.journals{list-style:none; margin:0; padding:0; border-top:1px solid var(--line)}
+  ul.journals li{
+    padding:.6rem 0; border-bottom:1px solid var(--line-soft);
+    font-size:.95rem; color:var(--text-soft);
+  }
+
+  /* ---------------- figure strip ---------------- */
+  .figstrip{
+    display:flex; gap:0; overflow-x:auto; scroll-snap-type:x mandatory;
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    scrollbar-width:thin; margin-bottom:2.2rem;
+  }
+  .figstrip:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .figstrip .slide{
+    scroll-snap-align:start; flex:0 0 min(17rem,72%);
+    background:none; border:0; padding:1rem 1.1rem 1.2rem;
+    font-family:inherit; text-align:left; cursor:pointer; color:inherit;
+  }
+  .figstrip .slide + .slide{border-left:1px solid var(--line)}
+  .figstrip .slide img{
+    display:block; width:100%; aspect-ratio:4/3; object-fit:contain;
+    background:#fff; border:1px solid var(--line-soft);
+  }
+  .figstrip .slide .n{
+    font-size:.7rem; letter-spacing:.12em; color:var(--accent);
+    font-weight:700; display:block; margin:.7rem 0 .25rem;
+  }
+  .figstrip .slide .t{
+    font-size:.83rem; line-height:1.45; color:var(--text); display:block;
+  }
+  .figstrip .slide:hover .t{text-decoration:underline; text-underline-offset:3px}
+  .figstrip .slide:hover img{border-color:var(--accent)}
+
+  /* ---------------- popping frame (modal) ---------------- */
+  dialog#figbox{
+    border:1px solid var(--line); background:var(--bg); color:var(--text);
+    padding:0; max-width:min(58rem,92vw); max-height:90vh; overflow:auto;
+  }
+  dialog#figbox::backdrop{background:rgba(20,20,17,.55)}
+  .fb-in{padding:1.4rem 1.5rem 1.5rem}
+  .fb-in img{display:block; width:100%; max-height:60vh; object-fit:contain; background:#fff; border:1px solid var(--line-soft)}
+  .fb-n{font-size:.7rem; letter-spacing:.14em; color:var(--accent); font-weight:700}
+  .fb-t{font-size:1.02rem; font-weight:700; line-height:1.45; margin:.3rem 0 .3rem}
+  .fb-a{font-size:.88rem; color:var(--text-soft); margin:0 0 1rem}
+  .fb-bar{display:flex; flex-wrap:wrap; gap:.6rem 1.4rem; align-items:center; padding-top:1rem; border-top:1px solid var(--line); margin-top:1.1rem}
+  .fb-bar button, .fb-bar a{
+    font-family:inherit; font-size:.82rem; letter-spacing:.05em; cursor:pointer;
+    background:none; border:1px solid var(--line); color:var(--text); padding:.5rem .9rem;
+  }
+  .fb-bar button:hover, .fb-bar a:hover{border-color:var(--accent); color:var(--accent); text-decoration:none}
+  .fb-bar .close{margin-left:auto; border-color:transparent; color:var(--text-faint)}
+
+  /* the frame that pops around the targeted entry */
+  @keyframes popframe{
+    0%   {box-shadow:0 0 0 3px var(--accent); background:var(--accent-soft)}
+    70%  {box-shadow:0 0 0 3px var(--accent); background:var(--accent-soft)}
+    100% {box-shadow:0 0 0 3px transparent;  background:transparent}
+  }
+  ol.pubs li.pop{animation:popframe 2.6s ease-out forwards}
+  @media (prefers-reduced-motion: reduce){
+    ol.pubs li.pop{animation:none; box-shadow:0 0 0 3px var(--accent)}
+  }
+  .figlink{
+    font-size:.78rem; letter-spacing:.04em; background:none; border:0; padding:0;
+    font-family:inherit; color:var(--accent); cursor:pointer; margin-left:.5rem;
+  }
+  .figlink:hover{text-decoration:underline; text-underline-offset:3px}
 
   /* ---------------- publications ---------------- */
   .tabs{display:flex; flex-wrap:wrap; gap:1.3rem; margin:0 0 1.8rem}
@@ -320,7 +381,6 @@
 <header class="hero">
   <div class="sheet">
     <div class="row">
-      <div class="mark">00</div>
       <div>
         <p class="eyebrow">Dr.-Ing. · Technical University of Munich</p>
         <h1>Chujun Zong</h1>
@@ -334,6 +394,7 @@
         <div class="actions">
           <a href="assets/CV_Chujun_Zong.pdf" target="_blank" rel="noopener">Curriculum vitae</a>
           <a href="assets/Publication_List_Chujun_Zong.pdf" target="_blank" rel="noopener">Publication list</a>
+          <a href="assets/Portfolio_Architecture_Chujun_Zong.pdf" target="_blank" rel="noopener">Architecture portfolio</a>
           <a href="mailto:chujun.zong@tum.de">Write to me</a>
         </div>
         <div class="meta">
@@ -359,7 +420,6 @@
 <!-- ============================ PROFILE ============================ -->
 <section id="profile">
   <div class="sheet row">
-    <div class="mark">01</div>
     <div class="col">
       <h2>Research profile</h2>
       <p class="stmt">
@@ -395,7 +455,6 @@
 <!-- ============================ INTERESTS ============================ -->
 <section id="interests">
   <div class="sheet row">
-    <div class="mark">02</div>
     <div class="col">
       <h2>Research interests</h2>
       <div class="keys">
@@ -416,7 +475,6 @@
 <section id="graphdlca">
   <div class="sheet">
     <div class="row">
-      <div class="mark">03</div>
       <div class="col">
         <h2>GraphDLCA</h2>
         <p class="stmt">
@@ -452,7 +510,6 @@
     </figure>
 
     <div class="row">
-      <div class="mark"></div>
       <div class="col">
         <ul class="notes">
           <li><b>Automated dynamic assessment.</b> Replacement cycles and impact factors that change over time are resolved by traversing the graph.</li>
@@ -473,9 +530,52 @@
 <!-- ============================ PUBLICATIONS ============================ -->
 <section id="publications">
   <div class="sheet row">
-    <div class="mark">04</div>
     <div class="col" style="max-width:42rem">
       <h2>Publications</h2>
+
+      <div class="slider-head">
+        <p class="sub" style="font-size:.85rem; color:var(--text-faint); margin:0">
+          Figures from selected papers. Select one to open it and jump to the entry.
+        </p>
+        <span class="hint">Scroll &#8594;</span>
+      </div>
+      <div class="figstrip" tabindex="0" role="group" aria-label="Figures from selected papers, scrollable">
+        <button class="slide" type="button" data-fig="assets/figures/f01.jpg" data-target="pub-01">
+          <img src="assets/figures/f01.jpg" alt="Map of a Munich district with buildings shaded by global warming potential per square metre">
+          <span class="n">01 &#183; Automation in Construction 2026</span>
+          <span class="t">Graph-based database structure for automated dynamic life cycle assessment</span>
+        </button>
+        <button class="slide" type="button" data-fig="assets/figures/f03.jpg" data-target="pub-03">
+          <img src="assets/figures/f03.jpg" alt="Time series of absolute global warming potential for construction variants, showing sawtooth replacement cycles">
+          <span class="n">03 &#183; Scientific Reports 2025</span>
+          <span class="t">Dynamic life cycle impact assessment in a building planning process</span>
+        </button>
+        <button class="slide" type="button" data-fig="assets/figures/f04.jpg" data-target="pub-04">
+          <img src="assets/figures/f04.jpg" alt="Causal loop diagram of material flows, circular waste treatment and substitution effects">
+          <span class="n">04 &#183; Building Simulation 2025</span>
+          <span class="t">Dynamic factors in life cycle assessment: systematic review</span>
+        </button>
+        <button class="slide" type="button" data-fig="assets/figures/f05.jpg" data-target="pub-05">
+          <img src="assets/figures/f05.jpg" alt="Four wheeled mobile measurement robot used to survey pedestrian level barriers">
+          <span class="n">05 &#183; Building Simulation 2025</span>
+          <span class="t">Assessing pedestrian level barriers using a mobile robot</span>
+        </button>
+        <button class="slide" type="button" data-fig="assets/figures/f10.jpg" data-target="pub-10">
+          <img src="assets/figures/f10.jpg" alt="Exploded axonometric showing construction type, building component, sub-component and material levels">
+          <span class="n">10 &#183; Building and Environment 2024</span>
+          <span class="t">Two-stage decision-making for passive and active design strategies</span>
+        </button>
+        <button class="slide" type="button" data-fig="assets/figures/f15.jpg" data-target="pub-15">
+          <img src="assets/figures/f15.jpg" alt="Hypervolume indicator rising and converging over thirty thousand function evaluations">
+          <span class="n">15 &#183; IBPSA Building Simulation 2023</span>
+          <span class="t">Dynamic simulation compared with machine learning in stochastic optimization</span>
+        </button>
+        <button class="slide" type="button" data-fig="assets/figures/f17.jpg" data-target="pub-17">
+          <img src="assets/figures/f17.jpg" alt="Flowchart from knowledge database and uncertainty quantification through stochastic optimization to a design decision proposal">
+          <span class="n">17 &#183; Building and Environment 2022</span>
+          <span class="t">Decision-making under uncertainty in early façade design</span>
+        </button>
+      </div>
 
       <div class="tally">
         <div><b>20</b>Peer reviewed</div>
@@ -496,12 +596,12 @@
 
         <div class="year">2026</div>
         <ol class="pubs">
-          <li data-k="journal first">
+          <li data-k="journal first" id="pub-01">
             <span class="idx">01</span>
             <span>
               <span class="pt">Graph-based Database Structure and Calculation Framework for Automated Dynamic Life Cycle Assessment of Buildings</span>
               <span class="pa"><b>Zong, C.</b>; Banihashemi, F.; Petzold, F.; Lang, W.</span>
-              <span class="pv"><em>Automation in Construction</em>, 2026.<span class="flag">Accepted</span><span class="flag q">Q1</span></span>
+              <span class="pv"><em>Automation in Construction</em>, 2026.<span class="flag">Accepted</span><span class="flag q">Q1</span><button class="figlink" type="button" data-fig="assets/figures/f01.jpg" data-idx="01">Figure &#8599;</button></span>
             </span>
           </li>
           <li data-k="journal">
@@ -516,28 +616,28 @@
 
         <div class="year">2025</div>
         <ol class="pubs">
-          <li data-k="journal first">
+          <li data-k="journal first" id="pub-03">
             <span class="idx">03</span>
             <span>
               <span class="pt">Dynamic Life Cycle Impact Assessment (DLCIA) in a Sustainable Building Planning Process</span>
               <span class="pa"><b>Zong, C.</b>; Banihashemi, F.; Lang, W.</span>
-              <span class="pv"><em>Scientific Reports</em>, 15, 32680, 2025. <a class="doi" href="https://doi.org/10.1038/s41598-025-20599-1" target="_blank" rel="noopener">10.1038/s41598-025-20599-1</a><span class="flag q">Q1</span></span>
+              <span class="pv"><em>Scientific Reports</em>, 15, 32680, 2025. <a class="doi" href="https://doi.org/10.1038/s41598-025-20599-1" target="_blank" rel="noopener">10.1038/s41598-025-20599-1</a><span class="flag q">Q1</span><button class="figlink" type="button" data-fig="assets/figures/f03.jpg" data-idx="03">Figure &#8599;</button></span>
             </span>
           </li>
-          <li data-k="conf first">
+          <li data-k="conf first" id="pub-04">
             <span class="idx">04</span>
             <span>
               <span class="pt">Dynamic Factors in Life Cycle Assessment: Systematic Review and Categorization</span>
               <span class="pa"><b>Zong, C.</b>; Lang, W.</span>
-              <span class="pv"><em>Building Simulation Conference 2025</em>, 19th IBPSA Conference. <a class="doi" href="https://doi.org/10.26868/25222708.2025.1450" target="_blank" rel="noopener">10.26868/25222708.2025.1450</a></span>
+              <span class="pv"><em>Building Simulation Conference 2025</em>, 19th IBPSA Conference. <a class="doi" href="https://doi.org/10.26868/25222708.2025.1450" target="_blank" rel="noopener">10.26868/25222708.2025.1450</a><button class="figlink" type="button" data-fig="assets/figures/f04.jpg" data-idx="04">Figure &#8599;</button></span>
             </span>
           </li>
-          <li data-k="conf first">
+          <li data-k="conf first" id="pub-05">
             <span class="idx">05</span>
             <span>
               <span class="pt">Assessing Pedestrian Level Barriers Using Mobile Robot to Validate 15-Minute City Concept</span>
               <span class="pa"><b>Zong, C.</b>; Lang, W.; Pancheri, F.; Sun, Y.</span>
-              <span class="pv"><em>Building Simulation Conference 2025</em>, 19th IBPSA Conference. <a class="doi" href="https://doi.org/10.26868/25222708.2025.1448" target="_blank" rel="noopener">10.26868/25222708.2025.1448</a></span>
+              <span class="pv"><em>Building Simulation Conference 2025</em>, 19th IBPSA Conference. <a class="doi" href="https://doi.org/10.26868/25222708.2025.1448" target="_blank" rel="noopener">10.26868/25222708.2025.1448</a><button class="figlink" type="button" data-fig="assets/figures/f05.jpg" data-idx="05">Figure &#8599;</button></span>
             </span>
           </li>
           <li data-k="conf">
@@ -576,12 +676,12 @@
 
         <div class="year">2024</div>
         <ol class="pubs">
-          <li data-k="journal first">
+          <li data-k="journal first" id="pub-10">
             <span class="idx">10</span>
             <span>
               <span class="pt">A Holistic Two-Stage Decision-Making Methodology for Passive and Active Building Design Strategies under Uncertainty</span>
               <span class="pa"><b>Zong, C.</b>; Chen, X.; Deghim, F.; Staudt, J.; Geyer, P.; Lang, W.</span>
-              <span class="pv"><em>Building and Environment</em>, 251, 111211, 2024. <a class="doi" href="https://doi.org/10.1016/j.buildenv.2024.111211" target="_blank" rel="noopener">10.1016/j.buildenv.2024.111211</a><span class="flag q">Q1</span></span>
+              <span class="pv"><em>Building and Environment</em>, 251, 111211, 2024. <a class="doi" href="https://doi.org/10.1016/j.buildenv.2024.111211" target="_blank" rel="noopener">10.1016/j.buildenv.2024.111211</a><span class="flag q">Q1</span><button class="figlink" type="button" data-fig="assets/figures/f10.jpg" data-idx="10">Figure &#8599;</button></span>
             </span>
           </li>
           <li data-k="journal">
@@ -620,12 +720,12 @@
               <span class="pv"><em>Scientific Reports</em>, 13, 4875, 2023. <a class="doi" href="https://doi.org/10.1038/s41598-023-32106-5" target="_blank" rel="noopener">10.1038/s41598-023-32106-5</a><span class="flag q">Q1</span></span>
             </span>
           </li>
-          <li data-k="conf first">
+          <li data-k="conf first" id="pub-15">
             <span class="idx">15</span>
             <span>
               <span class="pt">A Comparative Study of Dynamic Building Simulation and Machine-Learning within a Two-Stage Multi-Objective Stochastic Optimization Framework</span>
               <span class="pa"><b>Zong, C.</b>; Reitberger, R.; Deghim, F.; Staudt, J.; Larkin, J.A.; Lang, W.</span>
-              <span class="pv"><em>18th IBPSA Conference on Building Simulation</em>, 1540 to 1547, 2023. <a class="doi" href="https://doi.org/10.26868/25222708.2023.1369" target="_blank" rel="noopener">10.26868/25222708.2023.1369</a></span>
+              <span class="pv"><em>18th IBPSA Conference on Building Simulation</em>, 1540 to 1547, 2023. <a class="doi" href="https://doi.org/10.26868/25222708.2023.1369" target="_blank" rel="noopener">10.26868/25222708.2023.1369</a><button class="figlink" type="button" data-fig="assets/figures/f15.jpg" data-idx="15">Figure &#8599;</button></span>
             </span>
           </li>
           <li data-k="conf">
@@ -640,12 +740,12 @@
 
         <div class="year">2022</div>
         <ol class="pubs">
-          <li data-k="journal first">
+          <li data-k="journal first" id="pub-17">
             <span class="idx">17</span>
             <span>
               <span class="pt">Decision-Making under Uncertainty in the Early Phase of Building Façade Design Based on Multi-Objective Stochastic Optimization</span>
               <span class="pa"><b>Zong, C.</b>; Margesin, M.; Staudt, J.; Deghim, F.; Lang, W.</span>
-              <span class="pv"><em>Building and Environment</em>, 226, 109729, 2022. <a class="doi" href="https://doi.org/10.1016/j.buildenv.2022.109729" target="_blank" rel="noopener">10.1016/j.buildenv.2022.109729</a><span class="flag q">Q1</span></span>
+              <span class="pv"><em>Building and Environment</em>, 226, 109729, 2022. <a class="doi" href="https://doi.org/10.1016/j.buildenv.2022.109729" target="_blank" rel="noopener">10.1016/j.buildenv.2022.109729</a><span class="flag q">Q1</span><button class="figlink" type="button" data-fig="assets/figures/f17.jpg" data-idx="17">Figure &#8599;</button></span>
             </span>
           </li>
           <li data-k="conf first">
@@ -709,7 +809,6 @@
 <!-- ============================ PRACTICE ============================ -->
 <section id="practice">
   <div class="sheet row">
-    <div class="mark">05</div>
     <div class="col">
       <h2>Positions and practice</h2>
       <ol class="record">
@@ -736,27 +835,6 @@
             </span>
           </span>
         </li>
-        <li>
-          <span class="when">2018</span>
-          <span>
-            <span class="what">Architectural Assistant</span>
-            <span class="where">Obermayer</span>
-          </span>
-        </li>
-        <li>
-          <span class="when">2017</span>
-          <span>
-            <span class="what">Art and Design Assistant</span>
-            <span class="where">JE Art Gallery, Shanghai</span>
-          </span>
-        </li>
-        <li>
-          <span class="when">2017</span>
-          <span>
-            <span class="what">Art and Design Assistant</span>
-            <span class="where">Sifang Art Museum</span>
-          </span>
-        </li>
       </ol>
     </div>
   </div>
@@ -765,7 +843,6 @@
 <!-- ============================ EDUCATION ============================ -->
 <section id="education">
   <div class="sheet row">
-    <div class="mark">06</div>
     <div class="col">
       <h2>Education</h2>
       <ol class="record">
@@ -806,7 +883,6 @@
 <!-- ============================ PROJECTS ============================ -->
 <section id="projects">
   <div class="sheet row">
-    <div class="mark">07</div>
     <div class="col" style="max-width:none">
       <div class="slider-head">
         <h2 style="margin:0">Funded research projects</h2>
@@ -831,7 +907,6 @@
 <!-- ============================ TEACHING ============================ -->
 <section id="teaching">
   <div class="sheet row">
-    <div class="mark">08</div>
     <div class="col">
       <h2>Teaching</h2>
       <table class="tt">
@@ -865,7 +940,6 @@
 <!-- ============================ HONOURS ============================ -->
 <section id="honours">
   <div class="sheet row">
-    <div class="mark">09</div>
     <div class="col">
       <h2>Honours and awards</h2>
       <ul class="notes">
@@ -889,22 +963,19 @@
 <!-- ============================ SERVICE ============================ -->
 <section id="service">
   <div class="sheet row">
-    <div class="mark">10</div>
-    <div class="col" style="max-width:none">
-      <div class="slider-head">
-        <h2 style="margin:0">Peer review</h2>
-        <span class="hint">Scroll →</span>
-      </div>
-      <div class="slider" tabindex="0" role="group" aria-label="Journals reviewed for, scrollable">
-        <div class="j" style="flex-basis:min(15rem,64%)">Building and Environment</div>
-        <div class="j" style="flex-basis:min(15rem,64%)">Building Simulation</div>
-        <div class="j" style="flex-basis:min(15rem,64%)">Buildings</div>
-        <div class="j" style="flex-basis:min(15rem,64%)">Sustainability</div>
-        <div class="j" style="flex-basis:min(15rem,64%)">Scientific Reports</div>
-        <div class="j" style="flex-basis:min(15rem,64%)">Cell Reports Sustainability</div>
-        <div class="j" style="flex-basis:min(15rem,64%)">Journal of Architectural Engineering and Design Management</div>
-        <div class="j" style="flex-basis:min(15rem,64%)">Discover Artificial Intelligence</div>
-      </div>
+    <div class="col">
+      <h2>Peer review</h2>
+      <p style="margin-bottom:1.3rem">Reviewer for the following international journals.</p>
+      <ul class="journals">
+        <li>Building and Environment</li>
+        <li>Building Simulation</li>
+        <li>Buildings</li>
+        <li>Sustainability</li>
+        <li>Scientific Reports</li>
+        <li>Cell Reports Sustainability</li>
+        <li>Journal of Architectural Engineering and Design Management</li>
+        <li>Discover Artificial Intelligence</li>
+      </ul>
     </div>
   </div>
 </section>
@@ -912,7 +983,6 @@
 <!-- ============================ ELSEWHERE ============================ -->
 <section id="elsewhere">
   <div class="sheet row">
-    <div class="mark">11</div>
     <div class="col">
       <h2>Profiles and contact</h2>
       <p style="margin-bottom:1.6rem">
@@ -930,6 +1000,8 @@
           <span class="k">ResearchGate</span><span class="v">Chujun Zong</span><span class="go">→</span></a></li>
         <li><a href="https://www.cee.ed.tum.de/en/enpb/team/chujun-zong/" target="_blank" rel="noopener">
           <span class="k">University page</span><span class="v">Chair of Energy Efficient and Sustainable Design and Building</span><span class="go">→</span></a></li>
+        <li><a href="assets/Portfolio_Architecture_Chujun_Zong.pdf" target="_blank" rel="noopener">
+          <span class="k">Portfolio</span><span class="v">Architecture portfolio, 2019 (PDF)</span><span class="go">&#8594;</span></a></li>
         <li><div class="row2">
           <span class="k">Location</span><span class="v">Munich, Germany</span><span class="go"></span></div></li>
 
@@ -945,6 +1017,20 @@
 </section>
 
 </main>
+
+<dialog id="figbox" aria-labelledby="fb-title">
+  <div class="fb-in">
+    <span class="fb-n" id="fb-n"></span>
+    <p class="fb-t" id="fb-title"></p>
+    <img id="fb-img" src="" alt="">
+    <div class="fb-bar">
+      <button type="button" id="fb-goto">Show in publication list</button>
+      <a id="fb-doi" href="#" target="_blank" rel="noopener" hidden>Open the paper &#8599;</a>
+      <button type="button" class="close" id="fb-close">Close</button>
+    </div>
+  </div>
+</dialog>
+
 
 <footer>
   <div class="sheet foot">
@@ -992,7 +1078,7 @@
   });
 
   /* sliders: arrow keys and wheel, and hide the hint once there is nothing left to scroll */
-  document.querySelectorAll('.slider').forEach(function(sl){
+  document.querySelectorAll('.slider, .figstrip').forEach(function(sl){
     var hint = sl.previousElementSibling && sl.previousElementSibling.querySelector('.hint');
     function upd(){
       if(!hint) return;
@@ -1007,6 +1093,73 @@
       if(e.key === 'ArrowLeft'){  sl.scrollBy({left:-sl.clientWidth*0.8, behavior:'smooth'}); e.preventDefault(); }
     });
   });
+
+
+  /* ---- figure strip, popping frame, and jump to the entry ---- */
+  var box = document.getElementById('figbox');
+  if(box){
+    var fbImg = document.getElementById('fb-img'),
+        fbT   = document.getElementById('fb-title'),
+        fbN   = document.getElementById('fb-n'),
+        fbDoi = document.getElementById('fb-doi'),
+        current = null;
+
+    function entryInfo(idx){
+      var li = document.getElementById('pub-'+idx);
+      if(!li) return {};
+      var t = li.querySelector('.pt'), v = li.querySelector('.pv'),
+          a = li.querySelector('.pv a[href*="doi.org"]');
+      return {
+        li: li,
+        title: t ? t.textContent.trim() : '',
+        venue: v ? v.textContent.replace(/Figure.*$/,'').trim() : '',
+        doi: a ? a.href : null
+      };
+    }
+
+    function openFig(fig, idx){
+      var info = entryInfo(idx);
+      current = idx;
+      fbImg.src = fig;
+      fbImg.alt = 'Figure from: ' + (info.title || '');
+      fbT.textContent = info.title || '';
+      fbN.textContent = info.venue || '';
+      if(info.doi){ fbDoi.href = info.doi; fbDoi.hidden = false; }
+      else { fbDoi.hidden = true; }
+      if(typeof box.showModal === 'function') box.showModal();
+      else box.setAttribute('open','');
+    }
+
+    function popTo(idx){
+      var li = document.getElementById('pub-'+idx);
+      if(!li) return;
+      /* if a filter is hiding it, switch back to All so the entry is visible */
+      if(li.classList.contains('hide')){
+        var all = document.querySelector('.tab[data-f="all"]');
+        if(all) all.click();
+      }
+      li.scrollIntoView({behavior:'smooth', block:'center'});
+      li.classList.remove('pop');
+      void li.offsetWidth;              /* restart the animation */
+      li.classList.add('pop');
+      setTimeout(function(){ li.classList.remove('pop'); }, 2800);
+    }
+
+    document.querySelectorAll('.figstrip .slide').forEach(function(b){
+      b.addEventListener('click', function(){
+        openFig(b.dataset.fig, b.dataset.target.replace('pub-',''));
+      });
+    });
+    document.querySelectorAll('.figlink').forEach(function(b){
+      b.addEventListener('click', function(){ openFig(b.dataset.fig, b.dataset.idx); });
+    });
+    document.getElementById('fb-close').addEventListener('click', function(){ box.close(); });
+    document.getElementById('fb-goto').addEventListener('click', function(){
+      var idx = current; box.close(); setTimeout(function(){ popTo(idx); }, 90);
+    });
+    /* click the backdrop to dismiss */
+    box.addEventListener('click', function(e){ if(e.target === box) box.close(); });
+  }
 
   document.getElementById('yr').textContent = new Date().getFullYear();
 })();
