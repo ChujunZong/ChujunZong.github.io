@@ -65,9 +65,9 @@
   .sheet{max-width:var(--page); margin:0 auto; padding:0 32px}
   @media(max-width:640px){ .sheet{padding:0 22px} }
 
-  /* ---------------- column ---------------- */
+  /* ---------------- column (centred on the sheet) ---------------- */
   .row{display:block}
-  .col{max-width:var(--measure)}
+  .col{max-width:var(--measure); margin-inline:auto}
 
   /* ---------------- nav ---------------- */
   nav{
@@ -100,7 +100,7 @@
   @media(max-width:860px){ .nav-links{display:none} }
 
   /* ---------------- hero ---------------- */
-  header.hero{padding:5.5rem 0 0}
+  header.hero{padding:4rem 0 3rem}
   .eyebrow{
     font-size:.7rem; letter-spacing:.2em; text-transform:uppercase;
     color:var(--accent); font-weight:700; margin:0 0 1.6rem;
@@ -135,14 +135,18 @@
   figure.plate img, figure.plate video{display:block; width:100%; border-radius:0}
   figure.plate figcaption{
     font-size:.78rem; color:var(--text-faint); padding-top:.7rem;
-    border-top:1px solid var(--line); margin-top:.7rem; max-width:var(--measure);
+    border-top:1px solid var(--line); margin:.7rem auto 0; max-width:var(--measure);
   }
   /* portrait sits in the single column, caption directly beneath it */
-  .portrait-plate{max-width:23rem}
+  .portrait-plate{max-width:23rem; margin-inline:auto}
   .portrait-plate img{aspect-ratio:2/3; object-fit:cover}
 
   /* ---------------- sections ---------------- */
-  section{padding:3.6rem 0; border-top:1px solid var(--line)}
+  section{
+    padding:4.5rem 0; border-top:1px solid var(--line);
+    min-height:100vh; display:flex; flex-direction:column; justify-content:center;
+  }
+  header.hero{min-height:100vh; display:flex; flex-direction:column; justify-content:center}
   h2{
     font-size:1.02rem; letter-spacing:.13em; text-transform:uppercase;
     font-weight:700; margin:0 0 1.7rem; color:var(--accent);
@@ -198,13 +202,6 @@
   ol.record .what{font-weight:700; display:block; line-height:1.45}
   ol.record .where{font-size:.93rem; color:var(--text-soft); display:block}
   ol.record .note{font-size:.9rem; color:var(--text-faint); display:block; margin-top:.35rem}
-
-  /* ---------------- journals list ---------------- */
-  ul.journals{list-style:none; margin:0; padding:0; border-top:1px solid var(--line)}
-  ul.journals li{
-    padding:.6rem 0; border-bottom:1px solid var(--line-soft);
-    font-size:.95rem; color:var(--text-soft);
-  }
 
   /* ---------------- figure strip ---------------- */
   .figstrip{
@@ -960,26 +957,6 @@
   </div>
 </section>
 
-<!-- ============================ SERVICE ============================ -->
-<section id="service">
-  <div class="sheet row">
-    <div class="col">
-      <h2>Peer review</h2>
-      <p style="margin-bottom:1.3rem">Reviewer for the following international journals.</p>
-      <ul class="journals">
-        <li>Building and Environment</li>
-        <li>Building Simulation</li>
-        <li>Buildings</li>
-        <li>Sustainability</li>
-        <li>Scientific Reports</li>
-        <li>Cell Reports Sustainability</li>
-        <li>Journal of Architectural Engineering and Design Management</li>
-        <li>Discover Artificial Intelligence</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
 <!-- ============================ ELSEWHERE ============================ -->
 <section id="elsewhere">
   <div class="sheet row">
@@ -998,8 +975,6 @@
           <span class="k">Google Scholar</span><span class="v">Citation profile</span><span class="go">→</span></a></li>
         <li><a href="https://www.researchgate.net/profile/Chujun-Zong" target="_blank" rel="noopener">
           <span class="k">ResearchGate</span><span class="v">Chujun Zong</span><span class="go">→</span></a></li>
-        <li><a href="https://www.cee.ed.tum.de/en/enpb/team/chujun-zong/" target="_blank" rel="noopener">
-          <span class="k">University page</span><span class="v">Chair of Energy Efficient and Sustainable Design and Building</span><span class="go">→</span></a></li>
         <li><a href="assets/Portfolio_Architecture_Chujun_Zong.pdf" target="_blank" rel="noopener">
           <span class="k">Portfolio</span><span class="v">Architecture portfolio, 2019 (PDF)</span><span class="go">&#8594;</span></a></li>
         <li><div class="row2">
