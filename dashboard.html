@@ -513,7 +513,7 @@ async function load(){
   $('status').textContent = 'Loading…';
 
   var out = { start:start, end:end, series:[], pages:[], refs:[], geo:[], events:[],
-              totalViews:0, totalVisitors:0, hasUniques:false, failed:[], notes:[], totalSource:'' };
+              totalViews:0, totalVisitors:0, hasUniques:false, failed:[], notes:[], totalSource:'', rawTotal:null, eventTotal:null };
 
   /* --- hits (drives time series, pages and events) ---
      Try the precise form first, then loosen: drop `daily`, then drop the date
@@ -594,9 +594,13 @@ async function load(){
   await sleep(700);
   try{
     var tot = await api('/stats/total', {start:start});
-    if(tot && tot.total != null) apiTotal = Number(tot.total);
-    if(tot && tot.total_unique != null){
-      out.totalVisitors = Number(tot.total_unique); out.hasUniques = true;
+    if(tot && tot.total != null){
+      /* `total` counts section events as well as page loads. Subtract the
+         events so the headline is actual visits, not visits x interactions. */
+      var ev = (tot.total_events != null) ? Number(tot.total_events) : 0;
+      apiTotal = Math.max(0, Number(tot.total) - ev);
+      out.rawTotal = Number(tot.total);
+      out.eventTotal = ev;
     }
   }catch(e){ out.failed.push('stats/total: ' + e.message); }
 
@@ -612,8 +616,8 @@ async function load(){
 
   /* --- referrers, with the same loosening --- */
   var refAttempts = [
+    {label:'page loads only', params:{start:start, limit:12, include_paths:'/'}},
     {label:'start only', params:{start:start, limit:12}},
-    {label:'start and end', params:{start:start, end:end, limit:12}},
     {label:'default range', params:{limit:12}}
   ];
   for(var ri=0; ri<refAttempts.length; ri++){
@@ -632,8 +636,14 @@ async function load(){
   /* --- locations --- */
   await sleep(700);
   try{
-    var loc = await api('/stats/locations', {start:start, limit:12});
+    var loc = await api('/stats/locations', {start:start, limit:12, include_paths:'/'});
     out.geo = rowsOf(loc).filter(function(d){ return d.count>0; });
+    if(!out.geo.length){
+      await sleep(700);
+      loc = await api('/stats/locations', {start:start, limit:12});
+      out.geo = rowsOf(loc).filter(function(d){ return d.count>0; });
+      if(out.geo.length) out.notes.push('countries include section events, so counts run high');
+    }
   }catch(e){ out.failed.push('stats/locations: ' + e.message); }
 
   /* last resort: if nothing produced a headline figure but locations did,
@@ -977,6 +987,7 @@ function render(){
   var perDay = d.totalViews / nDays;
   $('k-views-meta').textContent = periodTxt +
     (d.totalViews ? ' · ' + (perDay>=10 ? Math.round(perDay) : perDay.toFixed(1)) + ' per day average' : '') +
+    (!state.demo && d.eventTotal ? ' · ' + fmtFull(d.eventTotal) + ' section views excluded' : '') +
     (!state.demo && d.totalSource && d.totalSource !== 'stats/total' && d.totalViews
        ? ' · via ' + d.totalSource : '');
 
