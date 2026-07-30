@@ -271,13 +271,13 @@
     <!-- hero + tiles -->
     <div class="hero-row">
       <div class="card hero">
-        <span class="label">Total visitors</span>
+        <span class="label">Visits</span>
         <div class="value" id="k-views">—</div>
         <span class="meta" id="k-views-meta"></span>
       </div>
       <div class="tiles">
         <div class="card tile">
-          <span class="label">Busiest day</span>
+          <span class="label">Section views</span>
           <div class="value" id="k-visitors">—</div>
           <span class="note" id="k-visitors-note"></span>
         </div>
@@ -987,19 +987,24 @@ function render(){
   var perDay = d.totalViews / nDays;
   $('k-views-meta').textContent = periodTxt +
     (d.totalViews ? ' · ' + (perDay>=10 ? Math.round(perDay) : perDay.toFixed(1)) + ' per day average' : '') +
-    (!state.demo && d.eventTotal ? ' · ' + fmtFull(d.eventTotal) + ' section views excluded' : '') +
+    (!state.demo && d.rawTotal ? ' · ' + fmtFull(d.rawTotal) + ' counted events in total' : '') +
     (!state.demo && d.totalSource && d.totalSource !== 'stats/total' && d.totalViews
        ? ' · via ' + d.totalSource : '');
 
-  /* busiest day — GoatCounter's API has no unique/total split, so show peak instead */
-  var peak = (d.series||[]).reduce(function(a,b){ return b.views > (a?a.views:-1) ? b : a; }, null);
-  if(peak && peak.views > 0){
-    $('k-visitors').textContent = fmt(peak.views);
-    $('k-visitors-note').textContent = new Date(peak.day+'T00:00:00Z')
-      .toLocaleDateString('en-GB',{day:'numeric', month:'short', timeZone:'UTC'});
+  /* section views: the events fired when a visitor opens a tab on the site.
+     Shown in their own right rather than only subtracted from the headline. */
+  var evTotal = state.demo
+      ? Math.round((d.series||[]).reduce(function(s,x){ return s+x.views; }, 0) * 2.4)
+      : (d.eventTotal || 0);
+  if(evTotal > 0){
+    $('k-visitors').textContent = fmt(evTotal);
+    var perVisit = d.totalViews ? (evTotal / d.totalViews) : 0;
+    $('k-visitors-note').textContent = perVisit
+      ? perVisit.toFixed(1) + ' per visit'
+      : 'tab openings';
   }else{
-    $('k-visitors').textContent = '—';
-    $('k-visitors-note').textContent = 'no traffic yet';
+    $('k-visitors').textContent = '0';
+    $('k-visitors-note').textContent = 'tab openings';
   }
 
   var evs = d.events||[];
