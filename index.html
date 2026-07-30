@@ -97,10 +97,14 @@
     display:grid; place-items:center; flex:none; margin-left:10px; border-radius:0;
   }
   #theme:hover{color:var(--text); border-color:var(--text-faint)}
-  @media(max-width:860px){ .nav-links{display:none} }
+  @media(max-width:860px){
+    .nav-links{overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none}
+    .nav-links::-webkit-scrollbar{display:none}
+    .nav-name{display:none}
+  }
 
   /* ---------------- hero ---------------- */
-  header.hero{padding:4rem 0 3rem}
+
   .eyebrow{
     font-size:.7rem; letter-spacing:.2em; text-transform:uppercase;
     color:var(--accent); font-weight:700; margin:0 0 1.6rem;
@@ -127,7 +131,7 @@
 
   .meta{
     display:flex; flex-wrap:wrap; gap:.3rem 2rem; font-size:.86rem;
-    color:var(--text-faint); padding-bottom:4rem;
+    color:var(--text-faint);
   }
 
   /* full width figure plate, allowed to exceed the text measure */
@@ -138,15 +142,19 @@
     border-top:1px solid var(--line); margin:.7rem auto 0; max-width:var(--measure);
   }
   /* portrait sits in the single column, caption directly beneath it */
-  .portrait-plate{max-width:23rem; margin-inline:auto}
+  .portrait-plate{max-width:21rem; margin-top:2.6rem}
   .portrait-plate img{aspect-ratio:2/3; object-fit:cover}
 
   /* ---------------- sections ---------------- */
-  section{
-    padding:4.5rem 0; border-top:1px solid var(--line);
-    min-height:100vh; display:flex; flex-direction:column; justify-content:center;
+  /* a page fills the screen; the sections inside it stack normally */
+  .page{
+    min-height:calc(100vh - 57px);
+    display:flex; flex-direction:column; justify-content:center;
+    padding:3rem 0 4rem;
   }
-  header.hero{min-height:100vh; display:flex; flex-direction:column; justify-content:center}
+  section{padding:0}
+  section + section{margin-top:3.2rem; padding-top:3.2rem; border-top:1px solid var(--line)}
+  header.hero{min-height:0; display:block; padding:0}
   h2{
     font-size:1.02rem; letter-spacing:.13em; text-transform:uppercase;
     font-weight:700; margin:0 0 1.7rem; color:var(--accent);
@@ -265,6 +273,33 @@
   }
   .figlink:hover{text-decoration:underline; text-underline-offset:3px}
 
+  /* ---------------- page switching ---------------- */
+  .page:not(.on){display:none}
+
+  .navtab{
+    font-family:inherit; background:none; border:0; cursor:pointer;
+    color:var(--text-faint); font-size:.72rem; letter-spacing:.12em;
+    text-transform:uppercase; padding:6px 11px;
+    border-bottom:2px solid transparent;
+  }
+  .navtab:hover{color:var(--text)}
+  .navtab[aria-selected="true"]{color:var(--accent); border-bottom-color:var(--accent)}
+
+  /* ---------------- publication year pages ---------------- */
+  .years{
+    display:flex; flex-wrap:wrap; gap:0; margin:0 0 1.2rem;
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  }
+  .ytab{
+    font-family:inherit; background:none; border:0; cursor:pointer;
+    color:var(--text-faint); font-size:.9rem; letter-spacing:.06em;
+    padding:.7rem 1.1rem; font-variant-numeric:tabular-nums;
+  }
+  .ytab + .ytab{border-left:1px solid var(--line)}
+  .ytab:hover{color:var(--text)}
+  .ytab[aria-selected="true"]{color:var(--accent); font-weight:700}
+  .nores{font-size:.92rem; color:var(--text-faint); padding:1.4rem 0 0}
+
   /* ---------------- publications ---------------- */
   .tabs{display:flex; flex-wrap:wrap; gap:1.3rem; margin:0 0 1.8rem}
   .tab{
@@ -360,13 +395,14 @@
 <nav>
   <div class="nav-in">
     <span class="nav-name">Chujun Zong</span>
-    <div class="nav-links">
-      <a href="#profile">Profile</a>
-      <a href="#graphdlca">GraphDLCA</a>
-      <a href="#publications">Publications</a>
-      <a href="#practice">Practice</a>
-      <a href="#teaching">Teaching</a>
-      <a href="#elsewhere">Profiles</a>
+    <div class="nav-links" role="tablist" aria-label="Sections">
+      <button class="navtab" type="button" role="tab" data-go="home">Home</button>
+      <button class="navtab" type="button" role="tab" data-go="profile">Profile</button>
+      <button class="navtab" type="button" role="tab" data-go="graphdlca">GraphDLCA</button>
+      <button class="navtab" type="button" role="tab" data-go="publications">Publications</button>
+      <button class="navtab" type="button" role="tab" data-go="practice">Practice</button>
+      <button class="navtab" type="button" role="tab" data-go="teaching">Teaching</button>
+      <button class="navtab" type="button" role="tab" data-go="contact">Contact</button>
     </div>
     <button id="theme" type="button" aria-label="Toggle colour theme" title="Toggle colour theme">◐</button>
   </div>
@@ -375,10 +411,11 @@
 <main id="main">
 
 <!-- ============================ HERO ============================ -->
+<div class="page" data-page="home">
 <header class="hero">
   <div class="sheet">
     <div class="row">
-      <div>
+      <div class="col">
         <p class="eyebrow">Dr.-Ing. · Technical University of Munich</p>
         <h1>Chujun Zong</h1>
         <p class="subtitle">Dynamic life cycle assessment and sustainable building design</p>
@@ -398,23 +435,35 @@
           <span>chujun.zong@tum.de</span>
           <span>Munich, Germany</span>
           <span>English · German · Mandarin</span>
-        </div>
+        <figure class="plate portrait-plate">
+        <img src="assets/portrait.jpg"
+             alt="Chujun Zong wearing the traditional German Doktorhut, hand built by colleagues, after the doctoral defence at the Technical University of Munich">
+        <figcaption>
+          Doctoral defence, Technical University of Munich, 2026.
+          The <em>Doktorhut</em> is a German academic tradition: colleagues build a hat
+          that tells the story of the doctorate it celebrates.
+        </figcaption>
+      </figure>
+      </div>
+      <figure class="plate portrait-plate">
+        <img src="assets/portrait.jpg"
+             alt="Chujun Zong wearing the traditional German Doktorhut, hand built by colleagues, after the doctoral defence at the Technical University of Munich">
+        <figcaption>
+          Doctoral defence, Technical University of Munich, 2026.
+          The <em>Doktorhut</em> is a German academic tradition: colleagues build a hat
+          that tells the story of the doctorate it celebrates.
+        </figcaption>
+      </figure>
       </div>
     </div>
 
-    <figure class="plate portrait-plate">
-      <img src="assets/portrait.jpg"
-           alt="Chujun Zong wearing the traditional German Doktorhut, hand built by colleagues, after the doctoral defence at the Technical University of Munich">
-      <figcaption>
-        Doctoral defence, Technical University of Munich, 2026.
-        The <em>Doktorhut</em> is a German academic tradition: colleagues build a hat
-        that tells the story of the doctorate it celebrates.
-      </figcaption>
-    </figure>
+
   </div>
 </header>
+</div>
 
 <!-- ============================ PROFILE ============================ -->
+<div class="page" data-page="profile">
 <section id="profile">
   <div class="sheet row">
     <div class="col">
@@ -467,8 +516,10 @@
     </div>
   </div>
 </section>
+</div>
 
 <!-- ============================ GRAPHDLCA ============================ -->
+<div class="page" data-page="graphdlca">
 <section id="graphdlca">
   <div class="sheet">
     <div class="row">
@@ -523,8 +574,10 @@
     </div>
   </div>
 </section>
+</div>
 
 <!-- ============================ PUBLICATIONS ============================ -->
+<div class="page" data-page="publications">
 <section id="publications">
   <div class="sheet row">
     <div class="col" style="max-width:42rem">
@@ -581,8 +634,16 @@
         <div><b>9</b>First author</div>
       </div>
 
-      <div class="tabs" role="tablist">
-        <button class="tab" role="tab" aria-selected="true"  data-f="all">All</button>
+      <div class="years" role="tablist" aria-label="Publication year">
+        <button class="ytab" type="button" role="tab" data-y="2026">2026</button>
+        <button class="ytab" type="button" role="tab" data-y="2025">2025</button>
+        <button class="ytab" type="button" role="tab" data-y="2024">2024</button>
+        <button class="ytab" type="button" role="tab" data-y="2023">2023</button>
+        <button class="ytab" type="button" role="tab" data-y="2022">2022</button>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Publication type">
+        <button class="tab" role="tab" aria-selected="true"  data-f="all">All types</button>
         <button class="tab" role="tab" aria-selected="false" data-f="journal">Journals</button>
         <button class="tab" role="tab" aria-selected="false" data-f="conf">Conferences</button>
         <button class="tab" role="tab" aria-selected="false" data-f="first">First author</button>
@@ -770,40 +831,16 @@
             </span>
           </li>
         </ol>
+        <p class="nores" hidden>No entries of this type in this year.</p>
       </div>
 
-      <h2 style="margin-top:3rem">Under review and in preparation</h2>
-      <ol class="pubs">
-        <li>
-          <span class="idx">·</span>
-          <span>
-            <span class="pt">Dynamism in Lifespan of Building Components and Integration in Conventional Life Cycle Analysis</span>
-            <span class="pa">Izquierdo Flores, A.; <b>Zong, C.</b> (corresponding author); Sun, Y.; Lang, W.</span>
-            <span class="pv">Journal manuscript.<span class="flag q">Under review</span></span>
-          </span>
-        </li>
-        <li>
-          <span class="idx">·</span>
-          <span>
-            <span class="pt">An LLM-based IFC Semantic Enrichment Framework for Construction-Phase LCA</span>
-            <span class="pa">Chen, H.; <b>Zong, C.</b>; Lang, W.</span>
-            <span class="pv">Submitted to <em>Automation in Construction</em>.<span class="flag q">Under review</span></span>
-          </span>
-        </li>
-        <li>
-          <span class="idx">·</span>
-          <span>
-            <span class="pt">AI-supported Integration of Recycled Materials under Data Uncertainty: Towards Green Circular Construction Possibilities</span>
-            <span class="pa">Mukanov, A.; <b>Zong, C.</b>; Chen, H.; Lang, W.</span>
-            <span class="pv">Conference manuscript.<span class="flag q">In preparation</span></span>
-          </span>
-        </li>
-      </ol>
     </div>
   </div>
 </section>
+</div>
 
 <!-- ============================ PRACTICE ============================ -->
+<div class="page" data-page="practice">
 <section id="practice">
   <div class="sheet row">
     <div class="col">
@@ -900,8 +937,10 @@
     </div>
   </div>
 </section>
+</div>
 
 <!-- ============================ TEACHING ============================ -->
+<div class="page" data-page="teaching">
 <section id="teaching">
   <div class="sheet row">
     <div class="col">
@@ -956,8 +995,10 @@
     </div>
   </div>
 </section>
+</div>
 
 <!-- ============================ ELSEWHERE ============================ -->
+<div class="page" data-page="contact">
 <section id="elsewhere">
   <div class="sheet row">
     <div class="col">
@@ -990,6 +1031,7 @@
     </div>
   </div>
 </section>
+</div>
 
 </main>
 
@@ -1027,30 +1069,83 @@
     try{ localStorage.setItem('theme', next); }catch(e){}
   });
 
-  /* publication filter */
-  var tabs  = document.querySelectorAll('.tab');
-  var items = document.querySelectorAll('#publist li');
-  var years = document.querySelectorAll('#publist .year');
+  /* ---------------- page switching ---------------- */
+  var pages   = document.querySelectorAll('[data-page]');
+  var navtabs = document.querySelectorAll('.navtab');
+  var VALID   = {};
+  navtabs.forEach(function(b){ VALID[b.dataset.go] = true; });
 
-  function apply(f){
-    items.forEach(function(li){
-      var k = li.getAttribute('data-k') || '';
-      li.classList.toggle('hide', !(f === 'all' || k.indexOf(f) > -1));
-    });
-    years.forEach(function(y){
-      var ol = y.nextElementSibling;
-      var any = ol ? ol.querySelectorAll('li:not(.hide)').length > 0 : false;
-      y.classList.toggle('hide', !any);
-      if(ol) ol.classList.toggle('hide', !any);
-    });
+  function routeName(){ return location.hash.replace(/^#\/?/, ''); }
+
+  function showPage(name, push){
+    if(!VALID[name]) name = 'home';
+    pages.forEach(function(el){ el.classList.toggle('on', el.dataset.page === name); });
+    navtabs.forEach(function(b){ b.setAttribute('aria-selected', b.dataset.go === name ? 'true':'false'); });
+    window.scrollTo({top:0, behavior:'instant'});
+    if(push && routeName() !== name){
+      history.pushState(null, '', '#/' + name);
+    }
+    if(window.__gcPage) window.__gcPage(name);
+    return name;
   }
-  tabs.forEach(function(t){
-    t.addEventListener('click', function(){
-      tabs.forEach(function(o){ o.setAttribute('aria-selected','false'); });
-      t.setAttribute('aria-selected','true');
-      apply(t.getAttribute('data-f'));
-    });
+
+  navtabs.forEach(function(b){
+    b.addEventListener('click', function(){ showPage(b.dataset.go, true); });
   });
+  window.addEventListener('popstate', function(){ showPage(routeName(), false); });
+
+  /* in-page links that point at another page still work */
+  document.querySelectorAll('a[href^="#"]').forEach(function(a){
+    var t = a.getAttribute('href').slice(1);
+    if(VALID[t]){
+      a.addEventListener('click', function(e){ e.preventDefault(); showPage(t, true); });
+    }
+  });
+
+  /* ---------------- publications: one year per page, filtered by type ---------------- */
+  var yearBlocks = [];
+  document.querySelectorAll('#publist .year').forEach(function(y){
+    yearBlocks.push({ label: y.textContent.trim(), head: y, list: y.nextElementSibling });
+  });
+  var ytabs  = document.querySelectorAll('.ytab');
+  var ttabs  = document.querySelectorAll('.tab');
+  var nores  = document.querySelector('.nores');
+  var state  = { year: (yearBlocks[0] ? yearBlocks[0].label : '2026'), type: 'all' };
+
+  function renderPubs(){
+    var shown = 0;
+    yearBlocks.forEach(function(b){
+      var isYear = b.label === state.year;
+      b.head.classList.toggle('hide', !isYear);
+      if(b.list) b.list.classList.toggle('hide', !isYear);
+      if(!b.list) return;
+      b.list.querySelectorAll('li').forEach(function(li){
+        var k = li.getAttribute('data-k') || '';
+        var pass = state.type === 'all' || k.indexOf(state.type) > -1;
+        li.classList.toggle('hide', !(isYear && pass));
+        if(isYear && pass) shown++;
+      });
+    });
+    if(nores) nores.hidden = shown > 0;
+    ytabs.forEach(function(b){ b.setAttribute('aria-selected', b.dataset.y === state.year ? 'true':'false'); });
+    ttabs.forEach(function(b){ b.setAttribute('aria-selected', b.dataset.f === state.type ? 'true':'false'); });
+  }
+
+  ytabs.forEach(function(b){
+    b.addEventListener('click', function(){ state.year = b.dataset.y; renderPubs(); });
+  });
+  ttabs.forEach(function(b){
+    b.addEventListener('click', function(){ state.type = b.dataset.f; renderPubs(); });
+  });
+  renderPubs();
+
+  /* the year a given entry lives in, so the figure modal can jump to it */
+  function yearOf(li){
+    for(var i=0;i<yearBlocks.length;i++){
+      if(yearBlocks[i].list && yearBlocks[i].list.contains(li)) return yearBlocks[i].label;
+    }
+    return null;
+  }
 
   /* sliders: arrow keys and wheel, and hide the hint once there is nothing left to scroll */
   document.querySelectorAll('.slider, .figstrip').forEach(function(sl){
@@ -1106,18 +1201,20 @@
     }
 
     function popTo(idx){
-      var li = document.getElementById('pub-'+idx);
+      var li = document.getElementById('pub-' + idx);
       if(!li) return;
-      /* if a filter is hiding it, switch back to All so the entry is visible */
-      if(li.classList.contains('hide')){
-        var all = document.querySelector('.tab[data-f="all"]');
-        if(all) all.click();
-      }
-      li.scrollIntoView({behavior:'smooth', block:'center'});
-      li.classList.remove('pop');
-      void li.offsetWidth;              /* restart the animation */
-      li.classList.add('pop');
-      setTimeout(function(){ li.classList.remove('pop'); }, 2800);
+      showPage('publications', true);
+      var y = yearOf(li);
+      if(y){ state.year = y; }
+      state.type = 'all';
+      renderPubs();
+      setTimeout(function(){
+        li.scrollIntoView({behavior:'smooth', block:'center'});
+        li.classList.remove('pop');
+        void li.offsetWidth;
+        li.classList.add('pop');
+        setTimeout(function(){ li.classList.remove('pop'); }, 2800);
+      }, 60);
     }
 
     document.querySelectorAll('.figstrip .slide').forEach(function(b){
@@ -1135,6 +1232,8 @@
     /* click the backdrop to dismiss */
     box.addEventListener('click', function(e){ if(e.target === box) box.close(); });
   }
+
+  showPage(routeName() || 'home', false);
 
   document.getElementById('yr').textContent = new Date().getFullYear();
 })();
@@ -1181,21 +1280,11 @@
         ev('video-play-graphdlca', 'GraphDLCA video play');
       }, { once:true });
     }
-    if('IntersectionObserver' in window){
-      var seen = {};
-      var io = new IntersectionObserver(function(entries){
-        entries.forEach(function(e){
-          if(e.isIntersecting && !seen[e.target.id]){
-            seen[e.target.id] = 1;
-            ev('/#' + e.target.id, 'Section viewed');
-          }
-        });
-      }, { threshold: 0.5 });
-      ['profile','graphdlca','publications','practice','teaching','elsewhere'].forEach(function(id){
-        var n = document.getElementById(id);
-        if(n) io.observe(n);
-      });
-    }
+    /* record each page the visitor opens (sections are tabs, not scroll targets) */
+    window.__gcPage = function(name){
+      ev('/#' + name, 'Page: ' + name);
+    };
+    window.__gcPage(location.hash.replace(/^#\/?/, '') || 'home');
   });
 })();
 </script>
