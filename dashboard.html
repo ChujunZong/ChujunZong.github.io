@@ -616,7 +616,7 @@ async function load(){
 
   /* --- referrers, with the same loosening --- */
   var refAttempts = [
-    {label:'page loads only', params:{start:start, limit:12, include_paths:'/'}},
+    {label:'page loads only', params:{start:start, limit:12, include_paths:'/', path_by_name:'true'}},
     {label:'start only', params:{start:start, limit:12}},
     {label:'default range', params:{limit:12}}
   ];
@@ -634,17 +634,25 @@ async function load(){
   }
 
   /* --- locations --- */
-  await sleep(700);
-  try{
-    var loc = await api('/stats/locations', {start:start, limit:12, include_paths:'/'});
-    out.geo = rowsOf(loc).filter(function(d){ return d.count>0; });
-    if(!out.geo.length){
-      await sleep(700);
-      loc = await api('/stats/locations', {start:start, limit:12});
-      out.geo = rowsOf(loc).filter(function(d){ return d.count>0; });
-      if(out.geo.length) out.notes.push('countries include section events, so counts run high');
+  var geoAttempts = [
+    {label:'page loads only', params:{start:start, limit:12, include_paths:'/', path_by_name:'true'}},
+    {label:'all hits',        params:{start:start, limit:12}},
+    {label:'default range',   params:{limit:12}}
+  ];
+  for(var gi=0; gi<geoAttempts.length; gi++){
+    await sleep(700);
+    try{
+      var loc = await api('/stats/locations', geoAttempts[gi].params);
+      var gg = rowsOf(loc).filter(function(d){ return d.count>0; });
+      if(gg.length){
+        out.geo = gg;
+        if(gi) out.notes.push('countries counted via "'+geoAttempts[gi].label+'", so they include section views');
+        break;
+      }
+    }catch(e){
+      out.failed.push('stats/locations ('+geoAttempts[gi].label+'): ' + e.message);
     }
-  }catch(e){ out.failed.push('stats/locations: ' + e.message); }
+  }
 
   /* last resort: if nothing produced a headline figure but locations did,
      use those, since every visitor is attributed to some country */
