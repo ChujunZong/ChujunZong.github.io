@@ -478,7 +478,8 @@ function rowsOf(json){
             (Array.isArray(json) ? json : null);
   if(!Array.isArray(arr)) return [];
   return arr.map(function(o){
-    var name = o.name || o.title || o.path || o.id || o.ref || '(unknown)';
+    var name = o.name || o.title || o.path || o.id || o.ref || '';
+    if(!name) name = 'Direct, no referrer';
     var count = o.count;
     if(count == null) count = o.total;
     if(count == null) count = sumDaily(o).views;
@@ -519,9 +520,13 @@ async function load(){
      range entirely. Whichever shape this GoatCounter version accepts wins, and
      the note records which one worked. */
   var hits = null, hitRows = [];
+  /* `end` is exclusive of the current day in this GoatCounter build, which
+     silently dropped today's traffic, so send `start` alone and let the end
+     default to now. The older forms stay as fallbacks. */
   var hitAttempts = [
-    {label:'range + daily', params:{start:start, end:end, daily:'true', limit:100}},
-    {label:'range only',    params:{start:start, end:end, limit:100}},
+    {label:'start only',    params:{start:start, daily:'true', limit:100}},
+    {label:'start, no daily', params:{start:start, limit:100}},
+    {label:'start and end', params:{start:start, end:end, daily:'true', limit:100}},
     {label:'default range', params:{limit:100}}
   ];
   for(var ai=0; ai<hitAttempts.length; ai++){
@@ -544,10 +549,12 @@ async function load(){
   var byDay = {};
   hitRows.forEach(function(h){
     var path = h.path || h.name || '(unknown)';
-    var isEvent = !!h.event;
     var agg = sumDaily(h);
     var total = h.count != null ? Number(h.count) : agg.views;
-    (isEvent ? out.events : out.pages).push({ name:path, count:total });
+    /* Section views are sent as events (path "#profile"), so route those to
+       the sections chart and keep only downloads and plays as interactions. */
+    var isInteraction = !!h.event && /^\/?(download-|video-play)/.test(path);
+    (isInteraction ? out.events : out.pages).push({ name:path, count:total });
 
     if(Array.isArray(h.stats)){
       h.stats.forEach(function(d){
@@ -586,7 +593,7 @@ async function load(){
   var apiTotal = null;
   await sleep(700);
   try{
-    var tot = await api('/stats/total', {start:start, end:end});
+    var tot = await api('/stats/total', {start:start});
     if(tot && tot.total != null) apiTotal = Number(tot.total);
     if(tot && tot.total_unique != null){
       out.totalVisitors = Number(tot.total_unique); out.hasUniques = true;
@@ -605,7 +612,8 @@ async function load(){
 
   /* --- referrers, with the same loosening --- */
   var refAttempts = [
-    {label:'range', params:{start:start, end:end, limit:12}},
+    {label:'start only', params:{start:start, limit:12}},
+    {label:'start and end', params:{start:start, end:end, limit:12}},
     {label:'default range', params:{limit:12}}
   ];
   for(var ri=0; ri<refAttempts.length; ri++){
@@ -624,7 +632,7 @@ async function load(){
   /* --- locations --- */
   await sleep(700);
   try{
-    var loc = await api('/stats/locations', {start:start, end:end, limit:12});
+    var loc = await api('/stats/locations', {start:start, limit:12});
     out.geo = rowsOf(loc).filter(function(d){ return d.count>0; });
   }catch(e){ out.failed.push('stats/locations: ' + e.message); }
 
@@ -660,15 +668,16 @@ function demoData(){
     start:isoDaysAgo(days), end:isoDaysAgo(0), series:series, hasUniques:false,
     totalViews:tv, totalVisitors:tu,
     pages:[
-      {name:'/', count:Math.round(tv*0.61)},
-      {name:'/#publications', count:Math.round(tv*0.17)},
-      {name:'/#graphdlca', count:Math.round(tv*0.11)},
-      {name:'/#experience', count:Math.round(tv*0.06)},
-      {name:'/#contact', count:Math.round(tv*0.05)}
+      {name:'/', count:Math.round(tv*0.55)},
+      {name:'#home', count:Math.round(tv*0.14)},
+      {name:'#publications', count:Math.round(tv*0.13)},
+      {name:'#graphdlca', count:Math.round(tv*0.09)},
+      {name:'#experience', count:Math.round(tv*0.05)},
+      {name:'#contact', count:Math.round(tv*0.04)}
     ],
     refs:[
       {name:'linkedin.com', count:Math.round(tv*0.34)},
-      {name:'(direct / email signature)', count:Math.round(tv*0.24)},
+      {name:'Direct, no referrer', count:Math.round(tv*0.24)},
       {name:'google.com', count:Math.round(tv*0.16)},
       {name:'ref=rmit', count:Math.round(tv*0.09)},
       {name:'scholar.google.com', count:Math.round(tv*0.07)},
@@ -921,12 +930,15 @@ function tableFor(rows, cols, caption){
 
 /* ======================= labels ======================= */
 function prettyPath(p){
-  if(p === '/' || p === '') return 'Home (hero)';
+  if(p === '/' || p === '') return 'Homepage (direct load)';
+  var key = String(p).replace(/^\/?#?/, '').toLowerCase();
   var map = {
-    '/#publications':'Publications','/#graphdlca':'GraphDLCA','/#about':'Research profile',
-    '/#experience':'Experience','/#teaching':'Teaching','/#contact':'Contact'
+    home:'Home', profile:'Research profile', graphdlca:'GraphDLCA',
+    publications:'Publications', experience:'Experience', practice:'Experience',
+    teaching:'Teaching', honors:'Honors and awards', honours:'Honors and awards',
+    contact:'Contact', elsewhere:'Contact', interests:'Research interests'
   };
-  return map[p] || p;
+  return map[key] || p;
 }
 function prettyEvent(name){
   var n = String(name).replace(/^\//,'');
