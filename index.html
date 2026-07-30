@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chujun Zong — Dynamic Life Cycle Assessment</title>
+<meta name="description" content="Chujun Zong, Dr.-Ing. Researcher in dynamic life cycle assessment, optimization under uncertainty, and graph database modeling for the built environment.">
+<meta name="author" content="Chujun Zong">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Chujun Zong — Dynamic Life Cycle Assessment">
+<meta property="og:description" content="Dr.-Ing. researcher bridging dynamic life cycle assessment, optimization under uncertainty, and graph database modeling for buildings and urban districts.">
+<meta property="og:image" content="assets/portrait.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◱</text></svg>">
+
+<style>
+  /* ============================================================
+     Palette: warm paper, hairline rules, muted sage accent.
+     No shadows, no filled cards. Structure comes from rules
+     and alignment, the way a drawing sheet is organised.
+     ============================================================ */
+  :root{
+    --bg:#faf9f6;
+    --bg-soft:#f2f0ea;
+    --surface:#ffffff;
+    --text:#1a1a17;
+    --text-soft:#55534c;
+    --text-faint:#8f8b81;
+    --line:#ddd9cf;
+    --line-soft:#ebe8e0;
+    --accent:#5b7266;
+    --accent-soft:#ecefe9;
+    --sans: Arial,"Helvetica Neue",Helvetica,sans-serif;
+    --page: 62rem;      /* sheet width  */
+    --measure: 37rem;   /* text column  */
+    --gutter: 4.5rem;   /* annotation gutter */
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])){
+      --bg:#161714; --bg-soft:#1d1f1b; --surface:#1c1e1a;
+      --text:#ecebe4; --text-soft:#b0ada4; --text-faint:#837f76;
+      --line:#32342d; --line-soft:#26281f;
+      --accent:#9db3a4; --accent-soft:#212620;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#161714; --bg-soft:#1d1f1b; --surface:#1c1e1a;
+    --text:#ecebe4; --text-soft:#b0ada4; --text-faint:#837f76;
+    --line:#32342d; --line-soft:#26281f;
+    --accent:#9db3a4; --accent-soft:#212620;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth; scroll-padding-top:64px; -webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--sans); font-size:16px; line-height:1.72;
+    -webkit-font-smoothing:antialiased; font-kerning:normal;
+  }
+  a{color:var(--accent); text-decoration:none}
+  a:hover{text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px}
+  img{max-width:100%; height:auto}
+
+  .sheet{max-width:var(--page); margin:0 auto; padding:0 32px}
+  @media(max-width:640px){ .sheet{padding:0 22px} }
+
+  /* ---------------- annotation grid ---------------- */
+  .row{display:grid; grid-template-columns:var(--gutter) minmax(0,1fr); gap:0 2.25rem}
+  @media(max-width:760px){ .row{grid-template-columns:1fr; gap:0} }
+  .col{max-width:var(--measure)}
+  .mark{
+    font-size:.7rem; letter-spacing:.18em; color:var(--accent);
+    padding-top:.55rem; font-weight:700; font-variant-numeric:tabular-nums;
+  }
+  @media(max-width:760px){ .mark{padding:0 0 .5rem} }
+
+  /* ---------------- nav ---------------- */
+  nav{
+    position:sticky; top:0; z-index:50;
+    background:color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter:saturate(150%) blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-in{
+    display:flex; align-items:center; gap:6px; height:56px;
+    max-width:var(--page); margin:0 auto; padding:0 32px;
+  }
+  @media(max-width:640px){ .nav-in{padding:0 22px} }
+  .nav-name{
+    font-size:.78rem; letter-spacing:.16em; text-transform:uppercase;
+    font-weight:700; margin-right:auto; white-space:nowrap;
+  }
+  .nav-links{display:flex; gap:0}
+  .nav-links a{
+    color:var(--text-faint); font-size:.72rem; letter-spacing:.12em;
+    text-transform:uppercase; padding:6px 11px;
+  }
+  .nav-links a:hover{color:var(--text); text-decoration:none}
+  #theme{
+    border:1px solid var(--line); background:none; color:var(--text-faint);
+    width:30px; height:30px; cursor:pointer; font-size:.85rem; line-height:1;
+    display:grid; place-items:center; flex:none; margin-left:10px; border-radius:0;
+  }
+  #theme:hover{color:var(--text); border-color:var(--text-faint)}
+  @media(max-width:860px){ .nav-links{display:none} }
+
+  /* ---------------- hero ---------------- */
+  header.hero{padding:5.5rem 0 0}
+  .eyebrow{
+    font-size:.7rem; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--accent); font-weight:700; margin:0 0 1.6rem;
+  }
+  h1{
+    font-weight:400; font-size:clamp(2.6rem,7.5vw,3.7rem);
+    line-height:1.02; letter-spacing:-.035em; margin:0 0 .5rem;
+  }
+  .subtitle{
+    font-size:clamp(1rem,2.6vw,1.14rem); color:var(--text-soft);
+    margin:0 0 2.4rem; letter-spacing:-.005em; max-width:34rem;
+  }
+  .lede{font-size:1.06rem; color:var(--text-soft); margin:0 0 2rem; max-width:var(--measure)}
+  .lede b{color:var(--text); font-weight:700}
+
+  .actions{display:flex; flex-wrap:wrap; gap:0; margin:0 0 2.2rem; border-top:1px solid var(--line)}
+  .actions a{
+    font-size:.8rem; letter-spacing:.06em; padding:.8rem 1.15rem .8rem 0;
+    color:var(--text); border-bottom:1px solid var(--line); flex:none;
+    margin-right:1.6rem;
+  }
+  .actions a::after{content:" →"; color:var(--accent)}
+  .actions a:hover{color:var(--accent); text-decoration:none}
+
+  .meta{
+    display:flex; flex-wrap:wrap; gap:.3rem 2rem; font-size:.86rem;
+    color:var(--text-faint); padding-bottom:4rem;
+  }
+
+  /* full width figure plate, allowed to exceed the text measure */
+  figure.plate{margin:0 0 4.5rem}
+  figure.plate img, figure.plate video{display:block; width:100%; border-radius:0}
+  figure.plate figcaption{
+    font-size:.78rem; color:var(--text-faint); padding-top:.7rem;
+    border-top:1px solid var(--line); margin-top:.7rem; max-width:var(--measure);
+  }
+  /* portrait sits in the single column, caption directly beneath it */
+  .portrait-plate{max-width:23rem; margin-left:calc(var(--gutter) + 2.25rem)}
+  @media(max-width:760px){ .portrait-plate{margin-left:0} }
+  .portrait-plate img{aspect-ratio:2/3; object-fit:cover}
+
+  /* ---------------- sections ---------------- */
+  section{padding:3.6rem 0; border-top:1px solid var(--line)}
+  h2{
+    font-size:.74rem; letter-spacing:.2em; text-transform:uppercase;
+    font-weight:700; margin:0 0 1.6rem; color:var(--text-faint);
+  }
+  .stmt{font-size:1.16rem; line-height:1.6; letter-spacing:-.012em; margin:0 0 1.5rem; color:var(--text)}
+  p{margin:0 0 1.05rem; color:var(--text-soft)}
+  p:last-child{margin-bottom:0}
+
+  /* keywords */
+  .keys{display:flex; flex-wrap:wrap; gap:.4rem .5rem; margin:0}
+  .keys span{
+    font-size:.83rem; color:var(--text-soft); border:1px solid var(--line);
+    padding:.3rem .7rem; white-space:nowrap;
+  }
+
+  /* ---------------- sliding window ---------------- */
+  .slider-head{display:flex; align-items:baseline; gap:1rem; margin-bottom:1rem}
+  .slider-head .hint{
+    font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--text-faint); margin-left:auto;
+  }
+  .slider{
+    display:flex; gap:0; overflow-x:auto; scroll-snap-type:x mandatory;
+    background:var(--bg); border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    scrollbar-width:thin;
+  }
+  .slider:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .slider > *{
+    /* grow to fill when there are few panels, overflow and scroll when there are many */
+    scroll-snap-align:start; flex:1 0 min(19rem, 78%);
+    padding:1.35rem 1.4rem 1.5rem;
+  }
+  .slider > * + *{border-left:1px solid var(--line)}
+  .slider .when{font-size:.72rem; letter-spacing:.12em; color:var(--accent); font-weight:700}
+  .slider h3{font-size:1rem; font-weight:700; margin:.35rem 0 .5rem; letter-spacing:-.01em}
+  .slider p{font-size:.9rem; margin:0}
+  .slider .j{font-size:.92rem; color:var(--text-soft); align-content:center}
+
+  /* ---------------- record list (experience, education) ---------------- */
+  ol.record{list-style:none; margin:0; padding:0}
+  ol.record li{
+    display:grid; grid-template-columns:5.5rem 1fr; gap:1.4rem;
+    padding:1.15rem 0; border-bottom:1px solid var(--line-soft);
+  }
+  ol.record li:first-child{border-top:1px solid var(--line)}
+  @media(max-width:560px){
+    ol.record li{grid-template-columns:1fr; gap:.2rem}
+  }
+  ol.record .when{
+    font-size:.76rem; letter-spacing:.05em; color:var(--text-faint);
+    padding-top:.28rem; font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  ol.record .what{font-weight:700; display:block; line-height:1.45}
+  ol.record .where{font-size:.93rem; color:var(--text-soft); display:block}
+  ol.record .note{font-size:.9rem; color:var(--text-faint); display:block; margin-top:.35rem}
+
+  /* ---------------- publications ---------------- */
+  .tabs{display:flex; flex-wrap:wrap; gap:1.3rem; margin:0 0 1.8rem}
+  .tab{
+    font-family:inherit; font-size:.78rem; letter-spacing:.06em; cursor:pointer;
+    background:none; border:none; border-bottom:1px solid transparent;
+    color:var(--text-faint); padding:.2rem 0;
+  }
+  .tab:hover{color:var(--text)}
+  .tab[aria-selected="true"]{color:var(--text); border-bottom-color:var(--accent)}
+
+  .tally{
+    display:flex; flex-wrap:wrap; gap:0 2.4rem; margin:0 0 2rem;
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:.9rem 0;
+  }
+  .tally div{font-size:.8rem; color:var(--text-faint)}
+  .tally b{display:block; font-size:1.5rem; font-weight:400; color:var(--text); letter-spacing:-.02em; line-height:1.25}
+
+  .year{
+    font-size:.72rem; letter-spacing:.16em; color:var(--text-faint); font-weight:700;
+    padding:1.7rem 0 .55rem; border-bottom:1px solid var(--line);
+  }
+  ol.pubs{list-style:none; margin:0; padding:0}
+  ol.pubs li{
+    display:grid; grid-template-columns:1.9rem 1fr; gap:.9rem;
+    padding:1rem 0; border-bottom:1px solid var(--line-soft);
+  }
+  .idx{font-size:.72rem; color:var(--text-faint); padding-top:.32rem; font-variant-numeric:tabular-nums}
+  .pt{font-weight:700; display:block; line-height:1.48; margin-bottom:.25rem}
+  .pa{font-size:.9rem; color:var(--text-soft); display:block; margin-bottom:.25rem}
+  .pa b{color:var(--text); font-weight:700}
+  .pv{font-size:.85rem; color:var(--text-faint)}
+  .pv em{font-style:italic}
+  .flag{
+    display:inline-block; font-size:.66rem; letter-spacing:.1em; text-transform:uppercase;
+    font-weight:700; color:var(--accent); border:1px solid var(--accent);
+    padding:.05rem .4rem; margin-left:.4rem; vertical-align:.12em;
+  }
+  .flag.q{color:var(--text-faint); border-color:var(--line)}
+  .doi{font-size:.82rem}
+
+  /* ---------------- profiles ---------------- */
+  ul.links{list-style:none; margin:0; padding:0; border-top:1px solid var(--line)}
+  ul.links li{border-bottom:1px solid var(--line-soft)}
+  ul.links a, ul.links .row2{
+    display:grid; grid-template-columns:8.5rem 1fr auto; gap:1rem;
+    padding:.85rem 0; color:var(--text); align-items:baseline;
+  }
+  @media(max-width:560px){
+    ul.links a, ul.links .row2{grid-template-columns:1fr; gap:.1rem}
+    ul.links .go{display:none}
+  }
+  ul.links .k{font-size:.72rem; letter-spacing:.13em; text-transform:uppercase; color:var(--text-faint); font-weight:700}
+  ul.links .v{font-size:.94rem; word-break:break-word}
+  ul.links .go{color:var(--accent); font-size:.9rem}
+  ul.links a:hover{text-decoration:none; color:var(--accent)}
+  ul.links a:hover .v{text-decoration:underline; text-underline-offset:3px}
+
+  /* ---------------- misc ---------------- */
+  ul.notes{list-style:none; margin:0; padding:0}
+  ul.notes li{
+    position:relative; padding:0 0 .95rem 1.4rem; color:var(--text-soft); font-size:.97rem;
+  }
+  ul.notes li:last-child{padding-bottom:0}
+  ul.notes li::before{
+    content:""; position:absolute; left:0; top:.72em; width:.42rem; height:1px; background:var(--accent);
+  }
+  ul.notes b{color:var(--text); font-weight:700}
+
+  table.tt{width:100%; border-collapse:collapse; font-size:.94rem}
+  table.tt td{padding:.9rem 0; border-bottom:1px solid var(--line-soft); vertical-align:top}
+  table.tt tr:first-child td{border-top:1px solid var(--line)}
+  table.tt .a{font-weight:700; padding-right:1.2rem}
+  table.tt .b{color:var(--text-soft); width:36%; padding-right:1.2rem}
+  table.tt .c{font-size:.76rem; color:var(--text-faint); white-space:nowrap; text-align:right; font-variant-numeric:tabular-nums}
+  @media(max-width:600px){
+    table.tt td{display:block; border:none; padding:.15rem 0}
+    table.tt tr{display:block; padding:.9rem 0; border-bottom:1px solid var(--line-soft)}
+    table.tt tr:first-child{border-top:1px solid var(--line)}
+    table.tt .b, table.tt .c{width:auto; text-align:left}
+  }
+
+  footer{padding:2.4rem 0 3.4rem; border-top:1px solid var(--line); font-size:.8rem; color:var(--text-faint)}
+  .foot{display:flex; flex-wrap:wrap; gap:.5rem 1.5rem; justify-content:space-between}
+  .hide{display:none !important}
+  .skip{position:absolute; left:-9999px}
+  .skip:focus{left:12px; top:12px; background:var(--bg); padding:10px 14px; z-index:100; border:1px solid var(--accent)}
+</style>
+</head>
+<body>
+
+<a href="#main" class="skip">Skip to content</a>
+
+<nav>
+  <div class="nav-in">
+    <span class="nav-name">Chujun Zong</span>
+    <div class="nav-links">
+      <a href="#profile">Profile</a>
+      <a href="#graphdlca">GraphDLCA</a>
+      <a href="#publications">Publications</a>
+      <a href="#practice">Practice</a>
+      <a href="#teaching">Teaching</a>
+      <a href="#elsewhere">Profiles</a>
+    </div>
+    <button id="theme" type="button" aria-label="Toggle colour theme" title="Toggle colour theme">◐</button>
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- ============================ HERO ============================ -->
+<header class="hero">
+  <div class="sheet">
+    <div class="row">
+      <div class="mark">00</div>
+      <div>
+        <p class="eyebrow">Dr.-Ing. · Technical University of Munich</p>
+        <h1>Chujun Zong</h1>
+        <p class="subtitle">Dynamic life cycle assessment and sustainable building design</p>
+        <p class="lede">
+          I build methods that let designers see the environmental consequences of a
+          decision <b>while that decision is still open</b>. My work joins dynamic life
+          cycle assessment, optimization across multiple objectives under uncertainty,
+          and the modeling of building and district inventories in graph databases.
+        </p>
+        <div class="actions">
+          <a href="assets/CV_Chujun_Zong.pdf" target="_blank" rel="noopener">Curriculum vitae</a>
+          <a href="assets/Publication_List_Chujun_Zong.pdf" target="_blank" rel="noopener">Publication list</a>
+          <a href="mailto:chujun.zong@tum.de">Write to me</a>
+        </div>
+        <div class="meta">
+          <span>chujun.zong@tum.de</span>
+          <span>Munich, Germany</span>
+          <span>English · German · Mandarin</span>
+        </div>
+      </div>
+    </div>
+
+    <figure class="plate portrait-plate">
+      <img src="assets/portrait.jpg"
+           alt="Chujun Zong wearing the traditional German Doktorhut, hand built by colleagues, after the doctoral defence at the Technical University of Munich">
+      <figcaption>
+        Doctoral defence, Technical University of Munich, 2026.
+        The <em>Doktorhut</em> is a German academic tradition: colleagues build a hat
+        that tells the story of the doctorate it celebrates.
+      </figcaption>
+    </figure>
+  </div>
+</header>
+
+<!-- ============================ PROFILE ============================ -->
+<section id="profile">
+  <div class="sheet row">
+    <div class="mark">01</div>
+    <div class="col">
+      <h2>Research profile</h2>
+      <p class="stmt">
+        Conventional life cycle assessment freezes the world at the moment of
+        calculation. Buildings outlive every one of those assumptions.
+      </p>
+      <p>
+        I am a doctoral researcher, Dr.-Ing. with distinction (<em>magna cum laude</em>),
+        at the Technical University of Munich, at the Chair of Energy Efficient and
+        Sustainable Design and Building. My research develops dynamic life cycle
+        assessment methodology for the built environment, moving assessment from a
+        static and retrospective audit toward an instrument that informs design while
+        it is being drawn.
+      </p>
+      <p>
+        A standard assessment fixes the emission factors of the electricity grid, the
+        service life of every component, and the behaviour of the people inside. A
+        building outlasts all three. My work replaces those fixed quantities with
+        models that vary over time, carries the resulting uncertainty explicitly
+        through the calculation rather than hiding it in an average, and delivers the
+        answer early enough in the design process that it can still change the outcome.
+      </p>
+      <p>
+        Across this work I have written first author articles for journals in the top
+        quartile of their field, including <em>Building and Environment</em>,
+        <em>Scientific Reports</em> and <em>Automation in Construction</em>, and I have
+        led two publicly funded research projects at the university.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ INTERESTS ============================ -->
+<section id="interests">
+  <div class="sheet row">
+    <div class="mark">02</div>
+    <div class="col">
+      <h2>Research interests</h2>
+      <div class="keys">
+        <span>Dynamic life cycle assessment</span>
+        <span>Optimization under uncertainty</span>
+        <span>Uncertainty modeling</span>
+        <span>Graph databases for building inventories</span>
+        <span>Design decision support in early stages</span>
+        <span>Life cycle assessment at district scale</span>
+        <span>European sustainability regulation</span>
+        <span>Artificial intelligence for life cycle data</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ GRAPHDLCA ============================ -->
+<section id="graphdlca">
+  <div class="sheet">
+    <div class="row">
+      <div class="mark">03</div>
+      <div class="col">
+        <h2>GraphDLCA</h2>
+        <p class="stmt">
+          A graph database structure and calculation framework for automated dynamic
+          life cycle assessment of buildings.
+        </p>
+        <p>
+          GraphDLCA reorganises the building inventory as a property graph rather than
+          a spreadsheet. Components, materials, replacement events and impact factors
+          become nodes. The relationships between them, in composition and in time,
+          become edges that can be traversed.
+        </p>
+        <p>
+          Because time is modelled inside the graph instead of being added to a static
+          calculation afterwards, a dynamic assessment becomes a query rather than a
+          manual rebuild.
+        </p>
+      </div>
+    </div>
+
+    <figure class="plate" style="margin-top:2.2rem">
+      <video controls preload="metadata" playsinline
+             poster="assets/graphdlca-poster.jpg" width="960" height="502">
+        <source src="assets/graphdlca-gui.mp4" type="video/mp4">
+        Your browser cannot play embedded video.
+        <a href="assets/graphdlca-gui.mp4">Download the recording</a>.
+      </video>
+      <figcaption>
+        Walkthrough of the graphical user interface: inventory intake, component
+        modeling in the graph, configuration of dynamic factors, and exploration of
+        life cycle results. Screen recording, roughly 18 minutes, without commentary.
+      </figcaption>
+    </figure>
+
+    <div class="row">
+      <div class="mark"></div>
+      <div class="col">
+        <ul class="notes">
+          <li><b>Automated dynamic assessment.</b> Replacement cycles and impact factors that change over time are resolved by traversing the graph.</li>
+          <li><b>Reusable inventories.</b> Component data is entered once and queried again across scenarios and projects.</li>
+          <li><b>Scenario comparison.</b> Design variants are evaluated without entering the inventory again.</li>
+          <li><b>Interactive interface.</b> Results can be explored by readers who are not specialists in life cycle assessment.</li>
+        </ul>
+        <p style="font-size:.87rem; color:var(--text-faint); margin-top:1.4rem">
+          Published as: Zong, C.; Banihashemi, F.; Petzold, F.; Lang, W.
+          <em>Graph-based Database Structure and Calculation Framework for Automated
+          Dynamic Life Cycle Assessment of Buildings</em>, Automation in Construction, 2026.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PUBLICATIONS ============================ -->
+<section id="publications">
+  <div class="sheet row">
+    <div class="mark">04</div>
+    <div class="col" style="max-width:42rem">
+      <h2>Publications</h2>
+
+      <div class="tally">
+        <div><b>20</b>Peer reviewed</div>
+        <div><b>7</b>Journal articles</div>
+        <div><b>13</b>Conference papers</div>
+        <div><b>9</b>First author</div>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true"  data-f="all">All</button>
+        <button class="tab" role="tab" aria-selected="false" data-f="journal">Journals</button>
+        <button class="tab" role="tab" aria-selected="false" data-f="conf">Conferences</button>
+        <button class="tab" role="tab" aria-selected="false" data-f="first">First author</button>
+        <button class="tab" role="tab" aria-selected="false" data-f="sup">Thesis supervision</button>
+      </div>
+
+      <div id="publist">
+
+        <div class="year">2026</div>
+        <ol class="pubs">
+          <li data-k="journal first">
+            <span class="idx">01</span>
+            <span>
+              <span class="pt">Graph-based Database Structure and Calculation Framework for Automated Dynamic Life Cycle Assessment of Buildings</span>
+              <span class="pa"><b>Zong, C.</b>; Banihashemi, F.; Petzold, F.; Lang, W.</span>
+              <span class="pv"><em>Automation in Construction</em>, 2026.<span class="flag">Accepted</span><span class="flag q">Q1</span></span>
+            </span>
+          </li>
+          <li data-k="journal">
+            <span class="idx">02</span>
+            <span>
+              <span class="pt">Evaluation of Building Design Variants in Early Phases on the Basis of Adaptive Detailing Strategies</span>
+              <span class="pa">Napps, D.; Staudt, J.; Saluz, U.; Chen, X.; Steiner, D.; <b>Zong, C.</b>; Deghim, F.; Lang, W.; Geyer, P.; Schnellenbach-Held, M.; Petzold, F.; Borrmann, A.; König, M.</span>
+              <span class="pv"><em>Buildings</em>, 16(4), 685, 2026. <a class="doi" href="https://doi.org/10.3390/buildings16040685" target="_blank" rel="noopener">10.3390/buildings16040685</a></span>
+            </span>
+          </li>
+        </ol>
+
+        <div class="year">2025</div>
+        <ol class="pubs">
+          <li data-k="journal first">
+            <span class="idx">03</span>
+            <span>
+              <span class="pt">Dynamic Life Cycle Impact Assessment (DLCIA) in a Sustainable Building Planning Process</span>
+              <span class="pa"><b>Zong, C.</b>; Banihashemi, F.; Lang, W.</span>
+              <span class="pv"><em>Scientific Reports</em>, 15, 32680, 2025. <a class="doi" href="https://doi.org/10.1038/s41598-025-20599-1" target="_blank" rel="noopener">10.1038/s41598-025-20599-1</a><span class="flag q">Q1</span></span>
+            </span>
+          </li>
+          <li data-k="conf first">
+            <span class="idx">04</span>
+            <span>
+              <span class="pt">Dynamic Factors in Life Cycle Assessment: Systematic Review and Categorization</span>
+              <span class="pa"><b>Zong, C.</b>; Lang, W.</span>
+              <span class="pv"><em>Building Simulation Conference 2025</em>, 19th IBPSA Conference. <a class="doi" href="https://doi.org/10.26868/25222708.2025.1450" target="_blank" rel="noopener">10.26868/25222708.2025.1450</a></span>
+            </span>
+          </li>
+          <li data-k="conf first">
+            <span class="idx">05</span>
+            <span>
+              <span class="pt">Assessing Pedestrian Level Barriers Using Mobile Robot to Validate 15-Minute City Concept</span>
+              <span class="pa"><b>Zong, C.</b>; Lang, W.; Pancheri, F.; Sun, Y.</span>
+              <span class="pv"><em>Building Simulation Conference 2025</em>, 19th IBPSA Conference. <a class="doi" href="https://doi.org/10.26868/25222708.2025.1448" target="_blank" rel="noopener">10.26868/25222708.2025.1448</a></span>
+            </span>
+          </li>
+          <li data-k="conf">
+            <span class="idx">06</span>
+            <span>
+              <span class="pt">A RAG-Based Framework for Material Matching in LCA: Integrating Semantic and Character Similarity with AI-Driven Explanations</span>
+              <span class="pa">Chen, H.; Benfer, R.; <b>Zong, C.</b>; Reitberger, R.; Präger, L.; Lang, W.</span>
+              <span class="pv"><em>Building Simulation Conference 2025</em>, 19th IBPSA Conference. <a class="doi" href="https://doi.org/10.26868/25222708.2025.1449" target="_blank" rel="noopener">10.26868/25222708.2025.1449</a></span>
+            </span>
+          </li>
+          <li data-k="conf">
+            <span class="idx">07</span>
+            <span>
+              <span class="pt">Comparing Refurbishment Strategies for Buildings at a City District Level Using Life Cycle Analysis</span>
+              <span class="pa">Ehlers, N.; <b>Zong, C.</b>; Meier-Dotzler, C.; Lang, W.</span>
+              <span class="pv"><em>Journal of Physics: Conference Series</em>, 3140, CISBAT 2025, Lausanne. <a class="doi" href="https://doi.org/10.1088/1742-6596/3140/13/132010" target="_blank" rel="noopener">10.1088/1742-6596/3140/13/132010</a></span>
+            </span>
+          </li>
+          <li data-k="conf sup">
+            <span class="idx">08</span>
+            <span>
+              <span class="pt">Life Cycle Assessment of Urban Spaces: A Case Study on a District Scale</span>
+              <span class="pa">Quiroz, J.V.; Ehlers, N.; <b>Zong, C.</b>; Lang, W.</span>
+              <span class="pv"><em>IOP Conference Series: Earth and Environmental Science</em>, 1615, SBE 2025, Trondheim. <a class="doi" href="https://doi.org/10.1088/1755-1315/1615/1/012076" target="_blank" rel="noopener">10.1088/1755-1315/1615/1/012076</a><span class="flag">Supervised</span></span>
+            </span>
+          </li>
+          <li data-k="conf sup">
+            <span class="idx">09</span>
+            <span>
+              <span class="pt">Concept Paper for a Python Tool to Estimate Recycle and Reuse Potential of Building Materials</span>
+              <span class="pa">Kobrousli, M.; <b>Zong, C.</b>; Ehlers, N.; Lang, W.</span>
+              <span class="pv"><em>IOP Conference Series: Earth and Environmental Science</em>, SBE 2025, Zurich.<span class="flag">Supervised</span></span>
+            </span>
+          </li>
+        </ol>
+
+        <div class="year">2024</div>
+        <ol class="pubs">
+          <li data-k="journal first">
+            <span class="idx">10</span>
+            <span>
+              <span class="pt">A Holistic Two-Stage Decision-Making Methodology for Passive and Active Building Design Strategies under Uncertainty</span>
+              <span class="pa"><b>Zong, C.</b>; Chen, X.; Deghim, F.; Staudt, J.; Geyer, P.; Lang, W.</span>
+              <span class="pv"><em>Building and Environment</em>, 251, 111211, 2024. <a class="doi" href="https://doi.org/10.1016/j.buildenv.2024.111211" target="_blank" rel="noopener">10.1016/j.buildenv.2024.111211</a><span class="flag q">Q1</span></span>
+            </span>
+          </li>
+          <li data-k="journal">
+            <span class="idx">11</span>
+            <span>
+              <span class="pt">Occupancy Modeling on Non-Intrusive Indoor Environmental Data through Machine Learning</span>
+              <span class="pa">Banihashemi, F.; Weber, M.; Deghim, F.; <b>Zong, C.</b>; Lang, W.</span>
+              <span class="pv"><em>Building and Environment</em>, 254, 111382, 2024. <a class="doi" href="https://doi.org/10.1016/j.buildenv.2024.111382" target="_blank" rel="noopener">10.1016/j.buildenv.2024.111382</a><span class="flag q">Q1</span></span>
+            </span>
+          </li>
+          <li data-k="conf first">
+            <span class="idx">12</span>
+            <span>
+              <span class="pt">System Dynamics Modeling of Life Cycle Carbon Footprints for Building Wall Insulation Materials</span>
+              <span class="pa"><b>Zong, C.</b>; Sun, Y.; Lang, W.</span>
+              <span class="pv"><em>IOP Conference Series: Earth and Environmental Science</em>, 1363, WSBE 2024. <a class="doi" href="https://doi.org/10.1088/1755-1315/1363/1/012066" target="_blank" rel="noopener">10.1088/1755-1315/1363/1/012066</a></span>
+            </span>
+          </li>
+          <li data-k="conf sup">
+            <span class="idx">13</span>
+            <span>
+              <span class="pt">Gebäudetypen für Nicht-Wohngebäude zur vereinfachten Durchführung von Lebenszyklusanalysen auf Stadtquartiersebene</span>
+              <span class="pa">Beltinger, A.; Ehlers, N.; <b>Zong, C.</b>; Lang, W.</span>
+              <span class="pv"><em>BauSim 2024</em>, 10th Conference of IBPSA Germany and Austria. <a class="doi" href="https://doi.org/10.26868/29761662.2024.39" target="_blank" rel="noopener">10.26868/29761662.2024.39</a><span class="flag">Supervised</span></span>
+            </span>
+          </li>
+        </ol>
+
+        <div class="year">2023</div>
+        <ol class="pubs">
+          <li data-k="journal">
+            <span class="idx">14</span>
+            <span>
+              <span class="pt">Design of Topology Optimized Compliant Legs for Bio-Inspired Quadruped Robots</span>
+              <span class="pa">Sun, Y.; <b>Zong, C.</b>; Pancheri, F.; Chen, T.; Lueth, T.C.</span>
+              <span class="pv"><em>Scientific Reports</em>, 13, 4875, 2023. <a class="doi" href="https://doi.org/10.1038/s41598-023-32106-5" target="_blank" rel="noopener">10.1038/s41598-023-32106-5</a><span class="flag q">Q1</span></span>
+            </span>
+          </li>
+          <li data-k="conf first">
+            <span class="idx">15</span>
+            <span>
+              <span class="pt">A Comparative Study of Dynamic Building Simulation and Machine-Learning within a Two-Stage Multi-Objective Stochastic Optimization Framework</span>
+              <span class="pa"><b>Zong, C.</b>; Reitberger, R.; Deghim, F.; Staudt, J.; Larkin, J.A.; Lang, W.</span>
+              <span class="pv"><em>18th IBPSA Conference on Building Simulation</em>, 1540 to 1547, 2023. <a class="doi" href="https://doi.org/10.26868/25222708.2023.1369" target="_blank" rel="noopener">10.26868/25222708.2023.1369</a></span>
+            </span>
+          </li>
+          <li data-k="conf">
+            <span class="idx">16</span>
+            <span>
+              <span class="pt">A Holistic Analysis of Sustainability Metrics at an Urban District Scale</span>
+              <span class="pa">Ehlers, N.; Schulze, K.; <b>Zong, C.</b>; Vollmer, M.; Schroeter, S.; Lang, W.</span>
+              <span class="pv"><em>IOP Conference Series: Earth and Environmental Science</em>, 1196, SBE23, Thessaloniki. <a class="doi" href="https://doi.org/10.1088/1755-1315/1196/1/012071" target="_blank" rel="noopener">10.1088/1755-1315/1196/1/012071</a></span>
+            </span>
+          </li>
+        </ol>
+
+        <div class="year">2022</div>
+        <ol class="pubs">
+          <li data-k="journal first">
+            <span class="idx">17</span>
+            <span>
+              <span class="pt">Decision-Making under Uncertainty in the Early Phase of Building Façade Design Based on Multi-Objective Stochastic Optimization</span>
+              <span class="pa"><b>Zong, C.</b>; Margesin, M.; Staudt, J.; Deghim, F.; Lang, W.</span>
+              <span class="pv"><em>Building and Environment</em>, 226, 109729, 2022. <a class="doi" href="https://doi.org/10.1016/j.buildenv.2022.109729" target="_blank" rel="noopener">10.1016/j.buildenv.2022.109729</a><span class="flag q">Q1</span></span>
+            </span>
+          </li>
+          <li data-k="conf first">
+            <span class="idx">18</span>
+            <span>
+              <span class="pt">Implementation of Occupant Behaviour Models for Window Control Using Co-Simulation Approach</span>
+              <span class="pa"><b>Zong, C.</b>; Banihashemi, F.; Vollmer, M.; Lang, W.</span>
+              <span class="pv"><em>BauSIM 2022</em>. <a class="doi" href="https://doi.org/10.26868/29761662.2022.85" target="_blank" rel="noopener">10.26868/29761662.2022.85</a></span>
+            </span>
+          </li>
+          <li data-k="conf">
+            <span class="idx">19</span>
+            <span>
+              <span class="pt">Life Cycle Potentials and Improvement Opportunities as Guidance for Early-Stage Design Decisions</span>
+              <span class="pa">Staudt, J.; Margesin, M.; <b>Zong, C.</b>; Deghim, F.; Lang, W.; Zahedi, A.; Petzold, F.; Schneider-Marin, P.</span>
+              <span class="pv"><em>ECPPM 2022</em>, 14th European Conference on Product and Process Modelling. <a class="doi" href="https://doi.org/10.1201/9781003354222-5" target="_blank" rel="noopener">10.1201/9781003354222-5</a></span>
+            </span>
+          </li>
+          <li data-k="conf">
+            <span class="idx">20</span>
+            <span>
+              <span class="pt">Structure and LCA-Driven Building Design Support in Early Phases Using Knowledge-Based Methods and Domain Knowledge</span>
+              <span class="pa">Steiner, D.; Schnellenbach-Held, M.; Staudt, J.; Margesin, M.; <b>Zong, C.</b>; Lang, W.</span>
+              <span class="pv"><em>ECPPM 2022</em>, 14th European Conference on Product and Process Modelling. <a class="doi" href="https://doi.org/10.1201/9781003354222-6" target="_blank" rel="noopener">10.1201/9781003354222-6</a></span>
+            </span>
+          </li>
+        </ol>
+      </div>
+
+      <h2 style="margin-top:3rem">Under review and in preparation</h2>
+      <ol class="pubs">
+        <li>
+          <span class="idx">·</span>
+          <span>
+            <span class="pt">Dynamism in Lifespan of Building Components and Integration in Conventional Life Cycle Analysis</span>
+            <span class="pa">Izquierdo Flores, A.; <b>Zong, C.</b> (corresponding author); Sun, Y.; Lang, W.</span>
+            <span class="pv">Journal manuscript.<span class="flag q">Under review</span></span>
+          </span>
+        </li>
+        <li>
+          <span class="idx">·</span>
+          <span>
+            <span class="pt">An LLM-based IFC Semantic Enrichment Framework for Construction-Phase LCA</span>
+            <span class="pa">Chen, H.; <b>Zong, C.</b>; Lang, W.</span>
+            <span class="pv">Submitted to <em>Automation in Construction</em>.<span class="flag q">Under review</span></span>
+          </span>
+        </li>
+        <li>
+          <span class="idx">·</span>
+          <span>
+            <span class="pt">AI-supported Integration of Recycled Materials under Data Uncertainty: Towards Green Circular Construction Possibilities</span>
+            <span class="pa">Mukanov, A.; <b>Zong, C.</b>; Chen, H.; Lang, W.</span>
+            <span class="pv">Conference manuscript.<span class="flag q">In preparation</span></span>
+          </span>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PRACTICE ============================ -->
+<section id="practice">
+  <div class="sheet row">
+    <div class="mark">05</div>
+    <div class="col">
+      <h2>Positions and practice</h2>
+      <ol class="record">
+        <li>
+          <span class="when">2022 · 2026</span>
+          <span>
+            <span class="what">Research Associate and Doctoral Candidate</span>
+            <span class="where">Chair of Energy Efficient and Sustainable Design and Building, Technical University of Munich</span>
+            <span class="note">
+              Led two publicly funded research projects, supervised master's theses, and
+              taught in both English and German curricula. Chair of Professor Werner Lang,
+              Vice President for Sustainable Transformation.
+            </span>
+          </span>
+        </li>
+        <li>
+          <span class="when">2020 · 2021</span>
+          <span>
+            <span class="what">Working Student, Construction, Design and Sustainability</span>
+            <span class="where">Siemens Energy AG</span>
+            <span class="note">
+              Developed an internal carbon dioxide pricing methodology and contributed to
+              corporate sustainability and workplace guidelines.
+            </span>
+          </span>
+        </li>
+        <li>
+          <span class="when">2018</span>
+          <span>
+            <span class="what">Architectural Assistant</span>
+            <span class="where">Obermayer</span>
+          </span>
+        </li>
+        <li>
+          <span class="when">2017</span>
+          <span>
+            <span class="what">Art and Design Assistant</span>
+            <span class="where">JE Art Gallery, Shanghai</span>
+          </span>
+        </li>
+        <li>
+          <span class="when">2017</span>
+          <span>
+            <span class="what">Art and Design Assistant</span>
+            <span class="where">Sifang Art Museum</span>
+          </span>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ EDUCATION ============================ -->
+<section id="education">
+  <div class="sheet row">
+    <div class="mark">06</div>
+    <div class="col">
+      <h2>Education</h2>
+      <ol class="record">
+        <li>
+          <span class="when">2022 · 2026</span>
+          <span>
+            <span class="what">Dr.-Ing.</span>
+            <span class="where">Technical University of Munich, Chair of Energy Efficient and Sustainable Design and Building</span>
+            <span class="note">Supervisor: Professor Werner Lang. Passed <em>magna cum laude</em>.</span>
+          </span>
+        </li>
+        <li>
+          <span class="when">2019 · 2021</span>
+          <span>
+            <span class="what">M.Sc. Resource Efficient and Sustainable Building</span>
+            <span class="where">Technical University of Munich</span>
+          </span>
+        </li>
+        <li>
+          <span class="when">2014 · 2019</span>
+          <span>
+            <span class="what">B.A. Architecture</span>
+            <span class="where">Technical University of Munich</span>
+          </span>
+        </li>
+        <li>
+          <span class="when">2016 · 2017</span>
+          <span>
+            <span class="what">Exchange year, B.A. Architecture</span>
+            <span class="where">École Polytechnique Fédérale de Lausanne</span>
+          </span>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PROJECTS ============================ -->
+<section id="projects">
+  <div class="sheet row">
+    <div class="mark">07</div>
+    <div class="col" style="max-width:none">
+      <div class="slider-head">
+        <h2 style="margin:0">Funded research projects</h2>
+        <span class="hint">Scroll →</span>
+      </div>
+      <div class="slider" tabindex="0" role="group" aria-label="Funded research projects, scrollable">
+        <div>
+          <span class="when">2022 · 2025</span>
+          <h3>CircularGreenSimCity</h3>
+          <p>Holistic life cycle assessment of urban districts. Funded by the German Federal Ministry for Economic Affairs and Climate Action.</p>
+        </div>
+        <div>
+          <span class="when">2022 · 2024</span>
+          <h3>EarlyBIM2</h3>
+          <p>Knowledge database and machine learning assistance for performance oriented building. Funded by the German Research Foundation.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ TEACHING ============================ -->
+<section id="teaching">
+  <div class="sheet row">
+    <div class="mark">08</div>
+    <div class="col">
+      <h2>Teaching</h2>
+      <table class="tt">
+        <tbody>
+          <tr>
+            <td class="a">System Effects and Interdependencies of Sustainable Planning in Civil Engineering</td>
+            <td class="b">Teaching assistant · English</td>
+            <td class="c">2025 · 2026</td>
+          </tr>
+          <tr>
+            <td class="a">Introduction to Scientific Writing</td>
+            <td class="b">Lecturer · English</td>
+            <td class="c">2023 · 2026</td>
+          </tr>
+          <tr>
+            <td class="a">Sustainable Building and Ecological Building, basic modules</td>
+            <td class="b">Teaching assistant · German</td>
+            <td class="c">2022 · 2026</td>
+          </tr>
+          <tr>
+            <td class="a">Sustainable Lighting Technology</td>
+            <td class="b">Lecturer · English</td>
+            <td class="c">2022 · 2025</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ HONOURS ============================ -->
+<section id="honours">
+  <div class="sheet row">
+    <div class="mark">09</div>
+    <div class="col">
+      <h2>Honours and awards</h2>
+      <ul class="notes">
+        <li>
+          <b>Doce et Delecta Teaching Award, First Place.</b>
+          Faculty of Civil and Environmental Engineering, Technical University of
+          Munich, winter semester 2022 and 2023, for Sustainable Lighting Technology.
+        </li>
+        <li>
+          <b>National Award for Outstanding Self-funded Students Abroad, Category A</b>,
+          2024. China's highest honour for doctoral researchers studying overseas.
+        </li>
+        <li>
+          <b>Registered Professional</b>, German Sustainable Building Council.
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ SERVICE ============================ -->
+<section id="service">
+  <div class="sheet row">
+    <div class="mark">10</div>
+    <div class="col" style="max-width:none">
+      <div class="slider-head">
+        <h2 style="margin:0">Peer review</h2>
+        <span class="hint">Scroll →</span>
+      </div>
+      <div class="slider" tabindex="0" role="group" aria-label="Journals reviewed for, scrollable">
+        <div class="j" style="flex-basis:min(15rem,64%)">Building and Environment</div>
+        <div class="j" style="flex-basis:min(15rem,64%)">Building Simulation</div>
+        <div class="j" style="flex-basis:min(15rem,64%)">Buildings</div>
+        <div class="j" style="flex-basis:min(15rem,64%)">Sustainability</div>
+        <div class="j" style="flex-basis:min(15rem,64%)">Scientific Reports</div>
+        <div class="j" style="flex-basis:min(15rem,64%)">Cell Reports Sustainability</div>
+        <div class="j" style="flex-basis:min(15rem,64%)">Journal of Architectural Engineering and Design Management</div>
+        <div class="j" style="flex-basis:min(15rem,64%)">Discover Artificial Intelligence</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ ELSEWHERE ============================ -->
+<section id="elsewhere">
+  <div class="sheet row">
+    <div class="mark">11</div>
+    <div class="col">
+      <h2>Profiles and contact</h2>
+      <p style="margin-bottom:1.6rem">
+        Open to research collaborations, faculty positions, and industry projects in
+        sustainable building and life cycle assessment.
+      </p>
+      <ul class="links">
+        <li><a href="mailto:chujun.zong@tum.de">
+          <span class="k">Email</span><span class="v">chujun.zong@tum.de</span><span class="go">→</span></a></li>
+        <li><a href="https://orcid.org/0000-0001-6916-9451" target="_blank" rel="noopener">
+          <span class="k">ORCID</span><span class="v">0000-0001-6916-9451</span><span class="go">→</span></a></li>
+        <li><a href="https://scholar.google.com/citations?user=H9Apm50AAAAJ" target="_blank" rel="noopener">
+          <span class="k">Google Scholar</span><span class="v">Citation profile</span><span class="go">→</span></a></li>
+        <li><a href="https://www.researchgate.net/profile/Chujun-Zong" target="_blank" rel="noopener">
+          <span class="k">ResearchGate</span><span class="v">Chujun Zong</span><span class="go">→</span></a></li>
+        <li><a href="https://www.cee.ed.tum.de/en/enpb/team/chujun-zong/" target="_blank" rel="noopener">
+          <span class="k">University page</span><span class="v">Chair of Energy Efficient and Sustainable Design and Building</span><span class="go">→</span></a></li>
+        <li><div class="row2">
+          <span class="k">Location</span><span class="v">Munich, Germany</span><span class="go"></span></div></li>
+
+        <!-- Add your handles, then delete the surrounding comment markers.
+        <li><a href="https://www.linkedin.com/in/YOUR-HANDLE" target="_blank" rel="noopener">
+          <span class="k">LinkedIn</span><span class="v">YOUR-HANDLE</span><span class="go">→</span></a></li>
+        <li><a href="https://github.com/YOUR-USERNAME" target="_blank" rel="noopener">
+          <span class="k">GitHub</span><span class="v">YOUR-USERNAME</span><span class="go">→</span></a></li>
+        -->
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="sheet foot">
+    <span>© <span id="yr">2026</span> Chujun Zong</span>
+    <span>Publication record current as of July 2026</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  /* theme */
+  var root = document.documentElement, btn = document.getElementById('theme');
+  try{ var s = localStorage.getItem('theme'); if(s) root.setAttribute('data-theme', s); }catch(e){}
+  btn.addEventListener('click', function(){
+    var sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var cur = root.getAttribute('data-theme') || (sysDark ? 'dark' : 'light');
+    var next = cur === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem('theme', next); }catch(e){}
+  });
+
+  /* publication filter */
+  var tabs  = document.querySelectorAll('.tab');
+  var items = document.querySelectorAll('#publist li');
+  var years = document.querySelectorAll('#publist .year');
+
+  function apply(f){
+    items.forEach(function(li){
+      var k = li.getAttribute('data-k') || '';
+      li.classList.toggle('hide', !(f === 'all' || k.indexOf(f) > -1));
+    });
+    years.forEach(function(y){
+      var ol = y.nextElementSibling;
+      var any = ol ? ol.querySelectorAll('li:not(.hide)').length > 0 : false;
+      y.classList.toggle('hide', !any);
+      if(ol) ol.classList.toggle('hide', !any);
+    });
+  }
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      tabs.forEach(function(o){ o.setAttribute('aria-selected','false'); });
+      t.setAttribute('aria-selected','true');
+      apply(t.getAttribute('data-f'));
+    });
+  });
+
+  /* sliders: arrow keys and wheel, and hide the hint once there is nothing left to scroll */
+  document.querySelectorAll('.slider').forEach(function(sl){
+    var hint = sl.previousElementSibling && sl.previousElementSibling.querySelector('.hint');
+    function upd(){
+      if(!hint) return;
+      var more = sl.scrollWidth - sl.clientWidth - sl.scrollLeft > 4;
+      hint.style.opacity = more ? 1 : 0;
+    }
+    sl.addEventListener('scroll', upd);
+    window.addEventListener('resize', upd);
+    upd();
+    sl.addEventListener('keydown', function(e){
+      if(e.key === 'ArrowRight'){ sl.scrollBy({left: sl.clientWidth*0.8, behavior:'smooth'}); e.preventDefault(); }
+      if(e.key === 'ArrowLeft'){  sl.scrollBy({left:-sl.clientWidth*0.8, behavior:'smooth'}); e.preventDefault(); }
+    });
+  });
+
+  document.getElementById('yr').textContent = new Date().getFullYear();
+})();
+</script>
+
+<!-- ==================== ANALYTICS ====================
+     Cookieless visitor counting (GoatCounter).
+     Set GC_SITE_CODE to the site code you register at
+     https://www.goatcounter.com/signup and this activates itself.
+     Leave it empty and no tracking script loads at all.
+     View the numbers in dashboard.html.
+==================================================== -->
+<script>
+  window.GC_SITE_CODE = "";   /* e.g. "chujunzong" */
+</script>
+<script>
+(function(){
+  var code = window.GC_SITE_CODE;
+  if(!code) return;
+  if(location.hostname === 'localhost' || location.hostname === '127.0.0.1' ||
+     location.protocol === 'file:') return;
+
+  window.goatcounter = { path: function(p){ return p + location.hash; } };
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = '//gc.zgo.at/count.js';
+  s.setAttribute('data-goatcounter', 'https://' + code + '.goatcounter.com/count');
+  document.head.appendChild(s);
+
+  function ev(path, title){
+    if(window.goatcounter && window.goatcounter.count){
+      window.goatcounter.count({ path: path, title: title, event: true });
+    }
+  }
+  s.addEventListener('load', function(){
+    document.querySelectorAll('a[href$=".pdf"]').forEach(function(a){
+      a.addEventListener('click', function(){
+        ev('download-' + a.getAttribute('href').split('/').pop(), 'PDF download');
+      });
+    });
+    var v = document.querySelector('video');
+    if(v){
+      v.addEventListener('play', function(){
+        ev('video-play-graphdlca', 'GraphDLCA video play');
+      }, { once:true });
+    }
+    if('IntersectionObserver' in window){
+      var seen = {};
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if(e.isIntersecting && !seen[e.target.id]){
+            seen[e.target.id] = 1;
+            ev('/#' + e.target.id, 'Section viewed');
+          }
+        });
+      }, { threshold: 0.5 });
+      ['profile','graphdlca','publications','practice','teaching','elsewhere'].forEach(function(id){
+        var n = document.getElementById(id);
+        if(n) io.observe(n);
+      });
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

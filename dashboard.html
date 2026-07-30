@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homepage analytics — Chujun Zong</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+<style>
+  :root{
+    --bg:#faf9f6; --bg-soft:#f2f0ea; --surface:#ffffff;
+    --text:#1a1a17; --text-soft:#55534c; --text-faint:#8f8b81;
+    --line:#ddd9cf; --accent:#5b7266; --accent-soft:#ecefe9;
+    --shadow:0 1px 2px rgba(28,28,26,.05), 0 8px 24px rgba(28,28,26,.05);
+    --sans: Arial,"Helvetica Neue",Helvetica,sans-serif;
+    --maxw:1180px;
+    --ok:#1baf7a; --warn:#eda100; --bad:#e34948;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])){
+      --bg:#161714; --bg-soft:#1d1f1b; --surface:#1c1e1a;
+      --text:#ecebe4; --text-soft:#b0ada4; --text-faint:#837f76;
+      --line:#32342d; --accent:#9db3a4; --accent-soft:#212620;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#161714; --bg-soft:#1d1f1b; --surface:#1c1e1a;
+    --text:#ecebe4; --text-soft:#b0ada4; --text-faint:#837f76;
+    --line:#32342d; --accent:#9db3a4; --accent-soft:#212620;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  }
+
+  /* ---------- chart palette (dataviz reference instance, slots 1–2) ---------- */
+  .viz-root{
+    color-scheme:light;
+    --surface-1:#ffffff;
+    --text-primary:#0b0b0b;
+    --text-secondary:#52514e;
+    --text-muted:#8a8781;
+    --grid:#e8e7e3;
+    --series-1:#2a78d6;   /* visitors (primary measure) */
+    --series-2:#eb6834;   /* reserved for a 2nd measure */
+    --seq-250:#86b6ef;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:where(:not([data-theme="light"])) .viz-root{
+      color-scheme:dark;
+      --surface-1:#1c1e1a;
+      --text-primary:#ffffff;
+      --text-secondary:#c3c2b7;
+      --text-muted:#807d76;
+      --grid:#2f322c;
+      --series-1:#3987e5;
+      --series-2:#d95926;
+      --seq-250:#184f95;
+    }
+  }
+  :root[data-theme="dark"] .viz-root{
+    color-scheme:dark;
+    --surface-1:#1c1e1a;
+    --text-primary:#ffffff;
+    --text-secondary:#c3c2b7;
+    --text-muted:#807d76;
+    --grid:#2f322c;
+    --series-1:#3987e5;
+    --series-2:#d95926;
+    --seq-250:#184f95;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:var(--sans); font-size:15.5px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 22px}
+  a{color:var(--accent)}
+  h1{font-size:1.5rem; font-weight:700; letter-spacing:-.022em; margin:0}
+  h2{font-size:1.02rem; font-weight:700; letter-spacing:-.012em; margin:0 0 3px}
+  .sub{font-size:.85rem; color:var(--text-faint); margin:0}
+
+  header.top{border-bottom:1px solid var(--line); background:var(--surface)}
+  .top-in{display:flex; align-items:center; gap:14px; padding:15px 22px; max-width:var(--maxw); margin:0 auto}
+  .top-in .grow{margin-left:auto; display:flex; gap:8px; align-items:center}
+  .btn{
+    font-family:inherit; font-size:.86rem; font-weight:500; cursor:pointer;
+    border:1px solid var(--line); background:var(--surface); color:var(--text);
+    padding:7px 13px; border-radius:8px;
+  }
+  .btn:hover{border-color:var(--accent); color:var(--accent)}
+  .btn.pri{background:var(--accent); border-color:var(--accent); color:#fff}
+  :root[data-theme="dark"] .btn.pri{color:#10201a}
+  @media (prefers-color-scheme: dark){ :root:where(:not([data-theme="light"])) .btn.pri{color:#10201a} }
+  .btn.pri:hover{filter:brightness(1.08)}
+  .btn[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
+  :root[data-theme="dark"] .btn[aria-pressed="true"]{color:#10201a}
+
+  /* ---------- setup ---------- */
+  .panel{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:22px; box-shadow:var(--shadow); margin:26px 0;
+  }
+  .panel h2{margin-bottom:6px}
+  .form{display:grid; grid-template-columns:1fr 1fr auto; gap:12px; align-items:end; margin-top:18px}
+  @media(max-width:760px){ .form{grid-template-columns:1fr} }
+  label{display:block; font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); margin-bottom:5px; font-weight:700}
+  input[type=text], input[type=password]{
+    width:100%; font-family:inherit; font-size:.92rem; padding:9px 12px;
+    border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text);
+  }
+  input:focus{outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent)}
+  .hint{font-size:.83rem; color:var(--text-faint); margin:14px 0 0}
+  .steps{margin:14px 0 0; padding-left:20px; font-size:.9rem; color:var(--text-soft)}
+  .steps li{margin-bottom:7px}
+  code{
+    font-family:var(--sans); font-size:.87em; background:var(--bg-soft);
+    padding:2px 6px; border-radius:5px; border:1px solid var(--line);
+  }
+
+  /* ---------- filter row ---------- */
+  .filters{
+    display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+    padding:16px 0 4px;
+  }
+  .filters .lab{font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); font-weight:700; margin-right:4px}
+  .filters .spacer{margin-left:auto}
+  .status{font-size:.83rem; color:var(--text-faint)}
+  .status b{color:var(--text-soft); font-weight:700}
+
+  /* ---------- hero + tiles ---------- */
+  .hero-row{display:grid; grid-template-columns:1.25fr 3fr; gap:16px; margin:18px 0 16px}
+  @media(max-width:900px){ .hero-row{grid-template-columns:1fr} }
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:19px 21px; box-shadow:var(--shadow);
+  }
+  .hero .label{font-size:.79rem; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint); font-weight:700}
+  .hero .value{font-size:56px; line-height:1.02; font-weight:700; letter-spacing:-.03em; margin:6px 0 2px; color:var(--text)}
+  .hero .meta{font-size:.86rem; color:var(--text-faint)}
+  .tiles{display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
+  @media(max-width:900px){ .tiles{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:460px){ .tiles{grid-template-columns:1fr} }
+  .tile .label{font-size:.79rem; letter-spacing:.05em; text-transform:uppercase; color:var(--text-faint); font-weight:700}
+  .tile .value{font-size:1.9rem; font-weight:700; letter-spacing:-.025em; line-height:1.15; margin:5px 0 1px}
+  .tile .note{font-size:.82rem; color:var(--text-faint)}
+  .spark{display:block; margin-top:8px}
+
+  /* ---------- charts ---------- */
+  .chart-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:20px 22px 14px; box-shadow:var(--shadow); margin-bottom:16px;
+  }
+  .ch-head{display:flex; align-items:flex-start; gap:12px; margin-bottom:4px}
+  .ch-head .grow{margin-left:auto; display:flex; gap:7px; align-items:center}
+  .mini{
+    font-family:inherit; font-size:.78rem; cursor:pointer; color:var(--text-faint);
+    background:none; border:1px solid var(--line); border-radius:6px; padding:4px 9px;
+  }
+  .mini:hover{color:var(--text); border-color:var(--text-faint)}
+  .mini[aria-pressed="true"]{color:var(--accent); border-color:var(--accent)}
+  .legend{display:flex; flex-wrap:wrap; gap:16px; margin:10px 0 2px}
+  .legend .item{display:inline-flex; align-items:center; gap:7px; font-size:.85rem; color:var(--text-secondary,var(--text-soft))}
+  .legend .key{width:14px; height:3px; border-radius:2px; flex:none}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start}
+  @media(max-width:900px){ .grid2{grid-template-columns:1fr} }
+  svg{display:block; width:100%; overflow:visible}
+  .empty{
+    padding:26px 4px; color:var(--text-faint); font-size:.9rem; text-align:center;
+  }
+
+  /* data table view */
+  table.dv{width:100%; border-collapse:collapse; font-size:.88rem; margin-top:8px}
+  table.dv caption{text-align:left; font-size:.82rem; color:var(--text-faint); padding-bottom:8px}
+  table.dv th, table.dv td{padding:7px 10px; border-bottom:1px solid var(--line); text-align:left}
+  table.dv th{font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; color:var(--text-faint)}
+  table.dv td.num{text-align:right; font-variant-numeric:tabular-nums}
+  .tbl-wrap{overflow-x:auto; max-height:340px; overflow-y:auto}
+
+  /* tooltip */
+  #tip{
+    position:fixed; z-index:80; pointer-events:none; opacity:0; transition:opacity .09s;
+    background:var(--surface); border:1px solid var(--line); border-radius:9px;
+    box-shadow:0 4px 16px rgba(0,0,0,.16); padding:9px 12px; font-size:.85rem;
+    min-width:132px; color:var(--text);
+  }
+  #tip .t-title{font-weight:700; margin-bottom:5px; font-size:.83rem}
+  #tip .t-row{display:flex; align-items:center; gap:8px; white-space:nowrap}
+  #tip .t-row .k{width:10px; height:10px; border-radius:3px; flex:none}
+  #tip .t-row .n{margin-left:auto; font-weight:700; font-variant-numeric:tabular-nums}
+
+  /* diagnostics */
+  details.diag{margin:22px 0 40px; font-size:.87rem}
+  details.diag summary{cursor:pointer; color:var(--text-faint); padding:6px 0}
+  details.diag pre{
+    background:var(--bg-soft); border:1px solid var(--line); border-radius:9px;
+    padding:14px; overflow:auto; max-height:420px; font-size:.78rem; line-height:1.5;
+    font-family:ui-monospace,Menlo,monospace; white-space:pre-wrap; word-break:break-word;
+  }
+  .banner{
+    border-radius:10px; padding:13px 16px; margin:18px 0; font-size:.9rem;
+    border:1px solid var(--line); background:var(--bg-soft); color:var(--text-soft);
+  }
+  .banner.err{border-color:var(--bad); background:color-mix(in srgb, var(--bad) 9%, transparent); color:var(--text)}
+  .banner.demo{border-color:var(--warn); background:color-mix(in srgb, var(--warn) 12%, transparent); color:var(--text)}
+  .hide{display:none !important}
+  footer{padding:24px 0 44px; font-size:.83rem; color:var(--text-faint); border-top:1px solid var(--line); margin-top:20px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div>
+      <h1>Homepage analytics</h1>
+      <p class="sub">chujun.zong · visitor overview</p>
+    </div>
+    <div class="grow">
+      <button class="btn" id="reload" type="button">Refresh</button>
+      <button class="btn" id="settings" type="button">Settings</button>
+      <button class="btn" id="theme" type="button" aria-label="Toggle colour theme" title="Toggle colour theme" style="width:34px;padding:7px 0">◐</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ================= SETUP ================= -->
+  <section class="panel" id="setup">
+    <h2>Connect your analytics</h2>
+    <p class="sub">Read directly from the GoatCounter API in your browser. Nothing is sent anywhere else — the token is stored only in this browser's <code>localStorage</code>.</p>
+
+    <ol class="steps">
+      <li>Create a free account at <a href="https://www.goatcounter.com/signup" target="_blank" rel="noopener">goatcounter.com/signup</a>. The <b>site code</b> you choose becomes your subdomain — e.g. <code>chujunzong</code> → <code>chujunzong.goatcounter.com</code>.</li>
+      <li>In GoatCounter click <b>your username in the top menu → API</b>, then <b>Add token</b>. Tick <b>“Read statistics”</b> (the only permission this dashboard needs). Copy the token — it is shown once.</li>
+      <li>Paste both below and press <b>Connect</b>.</li>
+    </ol>
+
+    <div class="form">
+      <div>
+        <label for="code">Site code</label>
+        <input type="text" id="code" placeholder="chujunzong" autocomplete="off" spellcheck="false">
+      </div>
+      <div>
+        <label for="token">API token (read statistics)</label>
+        <input type="password" id="token" placeholder="paste token" autocomplete="off" spellcheck="false">
+      </div>
+      <button class="btn pri" id="connect" type="button" style="padding:10px 20px">Connect</button>
+    </div>
+    <p class="hint">
+      No account yet? <button class="mini" id="demo" type="button" style="font-size:.83rem">Load demo data</button>
+      — renders the dashboard with sample numbers so you can see the layout before signing up.
+    </p>
+  </section>
+
+  <div id="msg"></div>
+
+  <!-- ================= DASHBOARD ================= -->
+  <main id="dash" class="viz-root hide">
+
+    <div class="filters">
+      <span class="lab">Period</span>
+      <button class="btn range" data-days="7"  type="button" aria-pressed="false">7 days</button>
+      <button class="btn range" data-days="30" type="button" aria-pressed="true">30 days</button>
+      <button class="btn range" data-days="90" type="button" aria-pressed="false">90 days</button>
+      <button class="btn range" data-days="365" type="button" aria-pressed="false">1 year</button>
+      <span class="spacer"></span>
+      <span class="status" id="status"></span>
+    </div>
+
+    <!-- hero + tiles -->
+    <div class="hero-row">
+      <div class="card hero">
+        <span class="label">Total visitors</span>
+        <div class="value" id="k-views">—</div>
+        <span class="meta" id="k-views-meta"></span>
+      </div>
+      <div class="tiles">
+        <div class="card tile">
+          <span class="label">Busiest day</span>
+          <div class="value" id="k-visitors">—</div>
+          <span class="note" id="k-visitors-note"></span>
+        </div>
+        <div class="card tile">
+          <span class="label">CV downloads</span>
+          <div class="value" id="k-cv">—</div>
+          <span class="note">PDF opened</span>
+        </div>
+        <div class="card tile">
+          <span class="label">GraphDLCA plays</span>
+          <div class="value" id="k-video">—</div>
+          <span class="note">video started</span>
+        </div>
+        <div class="card tile">
+          <span class="label">Top country</span>
+          <div class="value" id="k-country" style="font-size:1.25rem">—</div>
+          <span class="note" id="k-country-note"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- time series -->
+    <section class="chart-card">
+      <div class="ch-head">
+        <div>
+          <h2>Traffic over time</h2>
+          <p class="sub" id="ts-sub">Visitors per day</p>
+        </div>
+        <div class="grow">
+          <button class="mini tbl-toggle" data-target="ts" type="button" aria-pressed="false">Table</button>
+        </div>
+      </div>
+      <div id="ts-legend" class="legend"></div>
+      <div id="ts-chart"></div>
+      <div id="ts-table" class="hide"></div>
+    </section>
+
+    <!-- breakdowns -->
+    <div class="grid2">
+      <section class="chart-card">
+        <div class="ch-head">
+          <div><h2>Most visited sections</h2><p class="sub">Visitors by path</p></div>
+          <div class="grow"><button class="mini tbl-toggle" data-target="pages" type="button" aria-pressed="false">Table</button></div>
+        </div>
+        <div id="pages-chart"></div>
+        <div id="pages-table" class="hide"></div>
+      </section>
+
+      <section class="chart-card">
+        <div class="ch-head">
+          <div><h2>Where visitors came from</h2><p class="sub">Referrer / campaign tag</p></div>
+          <div class="grow"><button class="mini tbl-toggle" data-target="refs" type="button" aria-pressed="false">Table</button></div>
+        </div>
+        <div id="refs-chart"></div>
+        <div id="refs-table" class="hide"></div>
+      </section>
+
+      <section class="chart-card">
+        <div class="ch-head">
+          <div><h2>Countries</h2><p class="sub">Approximate, from IP address</p></div>
+          <div class="grow"><button class="mini tbl-toggle" data-target="geo" type="button" aria-pressed="false">Table</button></div>
+        </div>
+        <div id="geo-chart"></div>
+        <div id="geo-table" class="hide"></div>
+      </section>
+
+      <section class="chart-card">
+        <div class="ch-head">
+          <div><h2>Downloads &amp; interactions</h2><p class="sub">Tracked events</p></div>
+          <div class="grow"><button class="mini tbl-toggle" data-target="ev" type="button" aria-pressed="false">Table</button></div>
+        </div>
+        <div id="ev-chart"></div>
+        <div id="ev-table" class="hide"></div>
+      </section>
+    </div>
+
+    <details class="diag">
+      <summary>Diagnostics — raw API responses</summary>
+      <pre id="diag-out">No requests yet.</pre>
+    </details>
+  </main>
+
+</div>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<footer>
+  <div class="wrap">
+    Private dashboard · not indexed · data read live from GoatCounter.
+    Aggregate statistics only — no individual visitors are identified.
+  </div>
+</footer>
+
+<script>
+(function(){
+'use strict';
+
+/* ======================= theme ======================= */
+var root = document.documentElement;
+try{ var t = localStorage.getItem('theme'); if(t) root.setAttribute('data-theme', t); }catch(e){}
+document.getElementById('theme').addEventListener('click', function(){
+  var sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var cur = root.getAttribute('data-theme') || (sysDark ? 'dark':'light');
+  var next = cur === 'dark' ? 'light':'dark';
+  root.setAttribute('data-theme', next);
+  try{ localStorage.setItem('theme', next); }catch(e){}
+  if(state.data) render();
+});
+
+/* ======================= state ======================= */
+var state = { code:'', token:'', days:30, demo:false, data:null };
+var diag = [];
+
+try{
+  state.code  = localStorage.getItem('gc_code')  || '';
+  state.token = localStorage.getItem('gc_token') || '';
+}catch(e){}
+document.getElementById('code').value  = state.code;
+document.getElementById('token').value = state.token;
+
+var $ = function(id){ return document.getElementById(id); };
+var msg = $('msg');
+
+function banner(text, kind){
+  msg.innerHTML = '<div class="banner '+(kind||'')+'">'+text+'</div>';
+}
+function clearBanner(){ msg.innerHTML = ''; }
+
+/* ======================= formatting ======================= */
+function fmt(n){
+  n = Number(n)||0;
+  if(n >= 1e6) return (n/1e6).toFixed(n<1e7?1:0).replace(/\.0$/,'')+'M';
+  if(n >= 1e4) return (n/1e3).toFixed(n<1e5?1:0).replace(/\.0$/,'')+'K';
+  return n.toLocaleString('en-US');
+}
+function fmtFull(n){ return (Number(n)||0).toLocaleString('en-US'); }
+function dayLabel(iso){
+  var d = new Date(iso+'T00:00:00Z');
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'});
+}
+function isoDaysAgo(n){
+  var d = new Date();
+  d.setUTCDate(d.getUTCDate()-n);
+  return d.toISOString().slice(0,10);
+}
+function esc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function cssVar(name){
+  return getComputedStyle(document.getElementById('dash')).getPropertyValue(name).trim();
+}
+
+/* ======================= API ======================= */
+function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+
+async function api(path, params){
+  var url = new URL('https://'+state.code+'.goatcounter.com/api/v0'+path);
+  Object.keys(params||{}).forEach(function(k){
+    if(params[k]!=null) url.searchParams.set(k, params[k]);
+  });
+  var res, text='';
+  try{
+    res = await fetch(url.toString(), {
+      headers:{ 'Authorization':'Bearer '+state.token, 'Content-Type':'application/json' }
+    });
+    text = await res.text();
+  }catch(err){
+    diag.push({endpoint:path, error:String(err)});
+    throw new Error('Network/CORS error on '+path+': '+err.message);
+  }
+  var json=null;
+  try{ json = JSON.parse(text); }catch(e){}
+  diag.push({endpoint:path, status:res.status, body:(text||'').slice(0,3000)});
+  if(!res.ok){
+    throw new Error(path+' → HTTP '+res.status+' '+(text||'').slice(0,220));
+  }
+  return json;
+}
+
+/* GoatCounter response shapes vary a little by version — pull rows defensively. */
+function rowsOf(json){
+  if(!json) return [];
+  var arr = json.stats || json.hits || json.refs || json.locations ||
+            (Array.isArray(json) ? json : null);
+  if(!Array.isArray(arr)) return [];
+  return arr.map(function(o){
+    var name = o.name || o.title || o.path || o.id || o.ref || '(unknown)';
+    var count = o.count;
+    if(count == null) count = o.total;
+    if(count == null) count = sumDaily(o).views;
+    return { name:String(name), count:Number(count)||0, raw:o };
+  });
+}
+function sumDaily(o){
+  var v=0, u=0;
+  var st = o && o.stats;
+  if(Array.isArray(st)){
+    st.forEach(function(d){
+      v += Number(d.daily != null ? d.daily : (d.count != null ? d.count : 0))||0;
+      u += Number(d.daily_unique != null ? d.daily_unique : (d.count_unique != null ? d.count_unique : 0))||0;
+    });
+  }
+  return {views:v, uniques:u};
+}
+
+/* ======================= load ======================= */
+async function load(){
+  diag = [];
+  var start = isoDaysAgo(state.days);
+  var end   = isoDaysAgo(0);
+  $('status').textContent = 'Loading…';
+
+  var out = { start:start, end:end, series:[], pages:[], refs:[], geo:[], events:[],
+              totalViews:0, totalVisitors:0, hasUniques:false };
+
+  /* --- hits (drives time series, pages and events) --- */
+  var hits = await api('/stats/hits', {start:start, end:end, daily:'true', limit:100});
+  var hitRows = (hits && (hits.hits || hits.stats)) || [];
+
+  var byDay = {};
+  hitRows.forEach(function(h){
+    var path = h.path || h.name || '(unknown)';
+    var isEvent = !!h.event;
+    var agg = sumDaily(h);
+    var total = h.count != null ? Number(h.count) : agg.views;
+    (isEvent ? out.events : out.pages).push({ name:path, count:total });
+
+    if(Array.isArray(h.stats)){
+      h.stats.forEach(function(d){
+        var key = (d.day || d.date || '').slice(0,10);
+        if(!key) return;
+        if(!byDay[key]) byDay[key] = {day:key, views:0, uniques:0};
+        byDay[key].views   += Number(d.daily != null ? d.daily : (d.count||0))||0;
+        var u = d.daily_unique != null ? d.daily_unique : d.count_unique;
+        if(u != null){ byDay[key].uniques += Number(u)||0; out.hasUniques = true; }
+      });
+    }
+  });
+
+  out.series = Object.keys(byDay).sort().map(function(k){ return byDay[k]; });
+  /* fill gaps so the line doesn't lie about missing days */
+  if(out.series.length){
+    var filled=[], cur=new Date(start+'T00:00:00Z'), last=new Date(end+'T00:00:00Z');
+    var map={}; out.series.forEach(function(d){ map[d.day]=d; });
+    while(cur <= last){
+      var k = cur.toISOString().slice(0,10);
+      filled.push(map[k] || {day:k, views:0, uniques:0});
+      cur.setUTCDate(cur.getUTCDate()+1);
+    }
+    out.series = filled;
+  }
+
+  out.pages.sort(function(a,b){ return b.count-a.count; });
+  out.events.sort(function(a,b){ return b.count-a.count; });
+  out.totalViews = out.series.reduce(function(s,d){ return s+d.views; }, 0);
+  out.totalVisitors = out.series.reduce(function(s,d){ return s+d.uniques; }, 0);
+
+  /* --- total (authoritative if available) --- */
+  await sleep(300);
+  try{
+    var tot = await api('/stats/total', {start:start, end:end});
+    if(tot){
+      if(tot.total != null) out.totalViews = Number(tot.total)||out.totalViews;
+      if(tot.total_unique != null){ out.totalVisitors = Number(tot.total_unique); out.hasUniques = true; }
+    }
+  }catch(e){ /* non-fatal */ }
+
+  /* --- referrers --- */
+  await sleep(300);
+  try{
+    var refs = await api('/stats/toprefs', {start:start, end:end, limit:12});
+    out.refs = rowsOf(refs).filter(function(d){ return d.count>0; });
+  }catch(e){}
+
+  /* --- locations --- */
+  await sleep(300);
+  try{
+    var loc = await api('/stats/locations', {start:start, end:end, limit:12});
+    out.geo = rowsOf(loc).filter(function(d){ return d.count>0; });
+  }catch(e){}
+
+  return out;
+}
+
+/* ======================= demo data ======================= */
+function demoData(){
+  var days = state.days, series=[], seed=7;
+  function rnd(){ seed = (seed*1103515245 + 12345) & 0x7fffffff; return seed/0x7fffffff; }
+  for(var i=days-1; i>=0; i--){
+    var base = 6 + Math.round(rnd()*9);
+    /* a LinkedIn spike 9 days ago */
+    if(i===9) base += 74;
+    if(i===8) base += 31;
+    if(i===7) base += 12;
+    var dow = new Date(isoDaysAgo(i)+'T00:00:00Z').getUTCDay();
+    if(dow===0||dow===6) base = Math.round(base*0.55);
+    series.push({ day:isoDaysAgo(i), views:base, uniques:Math.max(1, Math.round(base*0.68)) });
+  }
+  var tv = series.reduce(function(s,d){return s+d.views;},0);
+  var tu = series.reduce(function(s,d){return s+d.uniques;},0);
+  return {
+    /* hasUniques:false — GoatCounter's v0 API reports a single visitor count,
+       so the demo shows exactly the shape the real data will have. */
+    start:isoDaysAgo(days), end:isoDaysAgo(0), series:series, hasUniques:false,
+    totalViews:tv, totalVisitors:tu,
+    pages:[
+      {name:'/', count:Math.round(tv*0.61)},
+      {name:'/#publications', count:Math.round(tv*0.17)},
+      {name:'/#graphdlca', count:Math.round(tv*0.11)},
+      {name:'/#experience', count:Math.round(tv*0.06)},
+      {name:'/#contact', count:Math.round(tv*0.05)}
+    ],
+    refs:[
+      {name:'linkedin.com', count:Math.round(tv*0.34)},
+      {name:'(direct / email signature)', count:Math.round(tv*0.24)},
+      {name:'google.com', count:Math.round(tv*0.16)},
+      {name:'ref=rmit', count:Math.round(tv*0.09)},
+      {name:'scholar.google.com', count:Math.round(tv*0.07)},
+      {name:'orcid.org', count:Math.round(tv*0.05)},
+      {name:'x.com', count:Math.round(tv*0.03)}
+    ],
+    geo:[
+      {name:'Germany', count:Math.round(tv*0.38)},
+      {name:'China', count:Math.round(tv*0.14)},
+      {name:'Australia', count:Math.round(tv*0.11)},
+      {name:'Switzerland', count:Math.round(tv*0.09)},
+      {name:'Netherlands', count:Math.round(tv*0.07)},
+      {name:'United Kingdom', count:Math.round(tv*0.06)},
+      {name:'Denmark', count:Math.round(tv*0.05)},
+      {name:'United States', count:Math.round(tv*0.05)}
+    ],
+    events:[
+      {name:'download-CV_Chujun_Zong.pdf', count:37},
+      {name:'video-play-graphdlca', count:24},
+      {name:'download-Publication_List_Chujun_Zong.pdf', count:16}
+    ]
+  };
+}
+
+/* ======================= chart helpers ======================= */
+var SVGNS='http://www.w3.org/2000/svg';
+function el(tag, attrs, txt){
+  var n = document.createElementNS(SVGNS, tag);
+  for(var k in (attrs||{})) if(attrs[k]!=null) n.setAttribute(k, attrs[k]);
+  if(txt!=null) n.textContent = txt;
+  return n;
+}
+function niceMax(v){
+  if(v<=0) return 4;
+  var mag = Math.pow(10, Math.floor(Math.log10(v)));
+  var steps=[1,2,2.5,5,10];
+  for(var i=0;i<steps.length;i++){
+    if(v <= steps[i]*mag) return steps[i]*mag;
+  }
+  return 10*mag;
+}
+/* rounded on the data-end (right), square at the baseline (left) */
+function barPathH(x,y,w,h,r){
+  r = Math.min(r, w, h/2);
+  if(w<=0.6) return 'M'+x+' '+y+'h0.6v'+h+'h-0.6z';
+  return 'M'+x+' '+y+
+         'h'+(w-r)+'a'+r+' '+r+' 0 0 1 '+r+' '+r+
+         'v'+(h-2*r)+'a'+r+' '+r+' 0 0 1 '+(-r)+' '+r+
+         'h'+(-(w-r))+'z';
+}
+
+/* ---------- tooltip ---------- */
+var tip = $('tip');
+function showTip(html, x, y){
+  tip.innerHTML = html;
+  tip.style.opacity = 1;
+  var r = tip.getBoundingClientRect();
+  var px = x + 14, py = y - r.height/2;
+  if(px + r.width > window.innerWidth - 10) px = x - r.width - 14;
+  if(py < 8) py = 8;
+  if(py + r.height > window.innerHeight - 8) py = window.innerHeight - r.height - 8;
+  tip.style.left = px+'px'; tip.style.top = py+'px';
+}
+function hideTip(){ tip.style.opacity = 0; }
+
+/* ======================= line chart ======================= */
+function lineChart(mount, data, opts){
+  mount.innerHTML='';
+  if(!data.length){ mount.innerHTML = '<p class="empty">No data in this period yet.</p>'; return; }
+
+  var W = mount.clientWidth || 820, H = 268;
+  var m = {t:16, r:opts.showUniques?54:40, b:30, l:44};
+  var iw = Math.max(80, W-m.l-m.r), ih = H-m.t-m.b;
+
+  var maxV = 0;
+  data.forEach(function(d){
+    maxV = Math.max(maxV, d.views, opts.showUniques ? d.uniques : 0);
+  });
+  var yMax = niceMax(maxV);
+
+  var sx = function(i){ return m.l + (data.length===1 ? iw/2 : i*iw/(data.length-1)); };
+  var sy = function(v){ return m.t + ih - (v/yMax)*ih; };
+
+  var svg = el('svg', {viewBox:'0 0 '+W+' '+H, height:H, role:'img',
+    'aria-label':'Visitors per day'+(opts.showUniques?' and pageviews':'')+' from '+data[0].day+' to '+data[data.length-1].day});
+
+  var cGrid = cssVar('--grid'), cTxt = cssVar('--text-muted'),
+      cS1 = cssVar('--series-1'), cS2 = cssVar('--series-2'), cSurf = cssVar('--surface-1');
+
+  /* gridlines + y ticks */
+  var ticks = 4;
+  for(var i=0;i<=ticks;i++){
+    var v = yMax*i/ticks, y = sy(v);
+    svg.appendChild(el('line',{x1:m.l, x2:m.l+iw, y1:y, y2:y, stroke:cGrid, 'stroke-width':1}));
+    svg.appendChild(el('text',{x:m.l-9, y:y+4, 'text-anchor':'end', 'font-size':11, fill:cTxt}, fmt(v)));
+  }
+  /* x labels — first, middle, last only (no crowding) */
+  [0, Math.floor((data.length-1)/2), data.length-1].filter(function(v,i,a){return a.indexOf(v)===i;})
+    .forEach(function(i){
+      svg.appendChild(el('text',{x:sx(i), y:H-9, 'text-anchor': i===0?'start':(i===data.length-1?'end':'middle'),
+        'font-size':11, fill:cTxt}, dayLabel(data[i].day)));
+    });
+
+  function pathFor(key){
+    return data.map(function(d,i){ return (i?'L':'M')+sx(i).toFixed(2)+' '+sy(d[key]).toFixed(2); }).join(' ');
+  }
+  function areaFor(key){
+    return pathFor(key)+' L'+sx(data.length-1).toFixed(2)+' '+sy(0)+' L'+sx(0).toFixed(2)+' '+sy(0)+' Z';
+  }
+
+  /* views: area wash + 2px line */
+  svg.appendChild(el('path',{d:areaFor('views'), fill:cS1, 'fill-opacity':0.10}));
+  svg.appendChild(el('path',{d:pathFor('views'), fill:'none', stroke:cS1,
+    'stroke-width':2, 'stroke-linejoin':'round','stroke-linecap':'round'}));
+  if(opts.showUniques){
+    svg.appendChild(el('path',{d:pathFor('uniques'), fill:'none', stroke:cS2,
+      'stroke-width':2, 'stroke-linejoin':'round','stroke-linecap':'round'}));
+  }
+
+  /* end markers (r>=4) with 2px surface ring */
+  var last = data.length-1;
+  function marker(key,color){
+    svg.appendChild(el('circle',{cx:sx(last), cy:sy(data[last][key]), r:5,
+      fill:color, stroke:cSurf, 'stroke-width':2}));
+  }
+  marker('views', cS1);
+  if(opts.showUniques) marker('uniques', cS2);
+
+  /* direct end labels (text wears text tokens, not the series colour) */
+  var cTxt2 = cssVar('--text-secondary');
+  svg.appendChild(el('text',{x:sx(last)+10, y:sy(data[last].views)+4, 'font-size':11,
+    'font-weight':700, fill:cTxt2}, fmtFull(data[last].views)));
+
+  /* crosshair + hover */
+  var cross = el('line',{x1:0,x2:0,y1:m.t,y2:m.t+ih, stroke:cGrid, 'stroke-width':1, opacity:0});
+  svg.appendChild(cross);
+  var dot1 = el('circle',{r:5, fill:cS1, stroke:cSurf, 'stroke-width':2, opacity:0}); svg.appendChild(dot1);
+  var dot2 = el('circle',{r:5, fill:cS2, stroke:cSurf, 'stroke-width':2, opacity:0}); svg.appendChild(dot2);
+
+  var hit = el('rect',{x:m.l, y:m.t, width:iw, height:ih, fill:'transparent', style:'cursor:crosshair'});
+  svg.appendChild(hit);
+
+  hit.addEventListener('mousemove', function(ev){
+    var box = svg.getBoundingClientRect();
+    var scale = W / box.width;
+    var px = (ev.clientX - box.left) * scale;
+    var idx = Math.round((px - m.l) / (iw/(Math.max(1,data.length-1))));
+    idx = Math.max(0, Math.min(data.length-1, idx));
+    var d = data[idx];
+    cross.setAttribute('x1', sx(idx)); cross.setAttribute('x2', sx(idx)); cross.setAttribute('opacity',1);
+    dot1.setAttribute('cx', sx(idx)); dot1.setAttribute('cy', sy(d.views)); dot1.setAttribute('opacity',1);
+    if(opts.showUniques){
+      dot2.setAttribute('cx', sx(idx)); dot2.setAttribute('cy', sy(d.uniques)); dot2.setAttribute('opacity',1);
+    }
+    var html = '<div class="t-title">'+esc(new Date(d.day+'T00:00:00Z').toLocaleDateString('en-GB',
+                 {weekday:'short', day:'numeric', month:'short', year:'numeric', timeZone:'UTC'}))+'</div>'+
+      '<div class="t-row"><span class="k" style="background:'+cS1+'"></span>Visitors<span class="n">'+fmtFull(d.views)+'</span></div>';
+    if(opts.showUniques){
+      html += '<div class="t-row"><span class="k" style="background:'+cS2+'"></span>Pageviews<span class="n">'+fmtFull(d.uniques)+'</span></div>';
+    }
+    showTip(html, ev.clientX, ev.clientY);
+  });
+  hit.addEventListener('mouseleave', function(){
+    cross.setAttribute('opacity',0); dot1.setAttribute('opacity',0); dot2.setAttribute('opacity',0);
+    hideTip();
+  });
+
+  mount.appendChild(svg);
+}
+
+/* ======================= horizontal bar chart ======================= */
+function barChart(mount, rows, opts){
+  opts = opts||{};
+  mount.innerHTML='';
+  rows = (rows||[]).slice(0, opts.limit||8);
+  if(!rows.length){
+    mount.innerHTML = '<p class="empty">'+(opts.emptyText||'Nothing recorded in this period yet.')+'</p>';
+    return;
+  }
+
+  var W = mount.clientWidth || 480;
+  var band = 34, barH = Math.min(24, band-10);     /* ≤24px, leftover is air */
+  var m = {t:6, r:56, b:6, l:Math.min(190, Math.max(96, Math.round(W*0.36)))};
+  var H = m.t + m.b + rows.length*band;
+  var iw = Math.max(60, W - m.l - m.r);
+
+  var max = Math.max.apply(null, rows.map(function(d){ return d.count; }));
+  var yMax = niceMax(max);
+
+  var cS1 = cssVar('--series-1'), cTxt = cssVar('--text-secondary'),
+      cMut = cssVar('--text-muted'), cSurf = cssVar('--surface-1');
+
+  var svg = el('svg',{viewBox:'0 0 '+W+' '+H, height:H, role:'img',
+    'aria-label':(opts.aria||'Bar chart')});
+
+  rows.forEach(function(d,i){
+    var y = m.t + i*band + (band-barH)/2;
+    var w = (d.count/yMax)*iw;
+
+    /* label — truncate with ellipsis, full name in tooltip + table */
+    var label = opts.pretty ? opts.pretty(d.name) : d.name;
+    var maxChars = Math.floor(m.l/6.4);
+    var shown = label.length > maxChars ? label.slice(0, maxChars-1)+'…' : label;
+    svg.appendChild(el('text',{x:m.l-12, y:y+barH/2+4, 'text-anchor':'end',
+      'font-size':12, fill:cTxt}, shown));
+
+    /* 2px surface gap between adjacent bars is provided by band>barH air,
+       plus an explicit surface-coloured separator for touching cases */
+    var bar = el('path',{d:barPathH(m.l, y, w, barH, 4), fill:cS1, style:'cursor:default'});
+    svg.appendChild(bar);
+
+    /* value at the tip, outside the bar */
+    svg.appendChild(el('text',{x:m.l+w+9, y:y+barH/2+4, 'font-size':11.5,
+      'font-weight':700, fill:cMut}, fmtFull(d.count)));
+
+    function over(ev){
+      bar.setAttribute('fill-opacity', 0.82);
+      showTip('<div class="t-title">'+esc(label)+'</div>'+
+        '<div class="t-row"><span class="k" style="background:'+cS1+'"></span>'+
+        esc(opts.unit||'Visitors')+'<span class="n">'+fmtFull(d.count)+'</span></div>',
+        ev.clientX, ev.clientY);
+    }
+    function out(){ bar.setAttribute('fill-opacity', 1); hideTip(); }
+
+    /* hit target spans the whole band, wider than the mark */
+    var hit = el('rect',{x:m.l, y:m.t+i*band, width:iw+m.r-6, height:band,
+      fill:'transparent', style:'cursor:default'});
+    hit.addEventListener('mousemove', over);
+    hit.addEventListener('mouseleave', out);
+    svg.appendChild(hit);
+  });
+
+  mount.appendChild(svg);
+}
+
+/* ======================= table views ======================= */
+function tableFor(rows, cols, caption){
+  var h = '<div class="tbl-wrap"><table class="dv"><caption>'+esc(caption)+'</caption><thead><tr>';
+  cols.forEach(function(c){ h += '<th'+(c.num?' style="text-align:right"':'')+'>'+esc(c.label)+'</th>'; });
+  h += '</tr></thead><tbody>';
+  rows.forEach(function(r){
+    h += '<tr>';
+    cols.forEach(function(c){
+      h += '<td'+(c.num?' class="num"':'')+'>'+esc(c.get(r))+'</td>';
+    });
+    h += '</tr>';
+  });
+  return h + '</tbody></table></div>';
+}
+
+/* ======================= labels ======================= */
+function prettyPath(p){
+  if(p === '/' || p === '') return 'Home (hero)';
+  var map = {
+    '/#publications':'Publications','/#graphdlca':'GraphDLCA','/#about':'Research profile',
+    '/#experience':'Experience','/#teaching':'Teaching','/#contact':'Contact'
+  };
+  return map[p] || p;
+}
+function prettyEvent(name){
+  var n = String(name).replace(/^\//,'');
+  if(n.indexOf('download-') === 0){
+    var f = n.slice(9);
+    if(/CV_/i.test(f)) return 'CV (PDF) downloaded';
+    if(/Publication_List/i.test(f)) return 'Publication list (PDF)';
+    return f.replace(/\.pdf$/i,'')+' (PDF)';
+  }
+  if(n.indexOf('video-play') === 0) return 'GraphDLCA video played';
+  return n;
+}
+
+/* ======================= render ======================= */
+function render(){
+  var d = state.data;
+  if(!d) return;
+
+  $('dash').classList.remove('hide');
+
+  var periodTxt = state.days===365 ? 'last 12 months' : 'last '+state.days+' days';
+  $('status').innerHTML = (state.demo ? '<b>Demo data</b> · ' : '') +
+    esc(d.start)+' → '+esc(d.end);
+
+  /* hero + tiles */
+  $('k-views').textContent = fmt(d.totalViews);
+  var nDays = Math.max(1, (d.series||[]).length);
+  var perDay = d.totalViews / nDays;
+  $('k-views-meta').textContent = periodTxt +
+    (d.totalViews ? ' · ' + (perDay>=10 ? Math.round(perDay) : perDay.toFixed(1)) + ' per day average' : '');
+
+  /* busiest day — GoatCounter's API has no unique/total split, so show peak instead */
+  var peak = (d.series||[]).reduce(function(a,b){ return b.views > (a?a.views:-1) ? b : a; }, null);
+  if(peak && peak.views > 0){
+    $('k-visitors').textContent = fmt(peak.views);
+    $('k-visitors-note').textContent = new Date(peak.day+'T00:00:00Z')
+      .toLocaleDateString('en-GB',{day:'numeric', month:'short', timeZone:'UTC'});
+  }else{
+    $('k-visitors').textContent = '—';
+    $('k-visitors-note').textContent = 'no traffic yet';
+  }
+
+  var evs = d.events||[];
+  function evCount(test){
+    return evs.filter(function(e){ return test.test(e.name); })
+              .reduce(function(s,e){ return s+e.count; }, 0);
+  }
+  var cv = evCount(/CV_/i), vid = evCount(/video-play/i);
+  $('k-cv').textContent    = evs.length ? fmt(cv)  : '0';
+  $('k-video').textContent = evs.length ? fmt(vid) : '0';
+
+  if((d.geo||[]).length){
+    var top = d.geo.slice().sort(function(a,b){return b.count-a.count;})[0];
+    var share = d.totalViews ? Math.round(top.count/d.totalViews*100) : 0;
+    $('k-country').textContent = top.name;
+    $('k-country-note').textContent = fmtFull(top.count)+' visitors'+(share?' · '+share+'%':'');
+  }else{
+    $('k-country').textContent = '—';
+    $('k-country-note').textContent = 'no location data';
+  }
+
+  /* Single series: GoatCounter v0 reports visitors only, so no legend
+     (the title names what is plotted). If a future version adds a second
+     measure, hasUniques flips on and the legend appears. */
+  var showU = !!d.hasUniques;
+  var lg = $('ts-legend');
+  if(showU){
+    lg.innerHTML =
+      '<span class="item"><span class="key" style="background:'+cssVar('--series-1')+'"></span>Visitors</span>'+
+      '<span class="item"><span class="key" style="background:'+cssVar('--series-2')+'"></span>Pageviews</span>';
+    lg.classList.remove('hide');
+    $('ts-sub').textContent = 'Visitors and pageviews per day';
+  }else{
+    lg.innerHTML=''; lg.classList.add('hide');
+    $('ts-sub').textContent = 'Visitors per day';
+  }
+  lineChart($('ts-chart'), d.series, {showUniques:showU});
+  $('ts-table').innerHTML = tableFor(d.series, [
+    {label:'Date', get:function(r){ return r.day; }},
+    {label:'Visitors', num:true, get:function(r){ return fmtFull(r.views); }}
+  ].concat(showU ? [{label:'Pageviews', num:true, get:function(r){ return fmtFull(r.uniques); }}] : []),
+    'Visitors per day, '+d.start+' to '+d.end);
+
+  /* breakdowns */
+  barChart($('pages-chart'), d.pages, {pretty:prettyPath, aria:'Visitors by page section', unit:'Visitors'});
+  $('pages-table').innerHTML = tableFor(d.pages, [
+    {label:'Path', get:function(r){ return r.name; }},
+    {label:'Visitors', num:true, get:function(r){ return fmtFull(r.count); }}
+  ], 'Visitors by path');
+
+  barChart($('refs-chart'), d.refs, {aria:'Visitors by referrer', unit:'Referrals',
+    emptyText:'No referrer data yet — add ?ref= tags to links you share.'});
+  $('refs-table').innerHTML = tableFor(d.refs, [
+    {label:'Referrer', get:function(r){ return r.name; }},
+    {label:'Referrals', num:true, get:function(r){ return fmtFull(r.count); }}
+  ], 'Traffic sources');
+
+  barChart($('geo-chart'), d.geo, {aria:'Visitors by country', unit:'Visitors',
+    emptyText:'No location data yet.'});
+  $('geo-table').innerHTML = tableFor(d.geo, [
+    {label:'Country', get:function(r){ return r.name; }},
+    {label:'Visitors', num:true, get:function(r){ return fmtFull(r.count); }}
+  ], 'Visitors by country');
+
+  barChart($('ev-chart'), d.events, {pretty:prettyEvent, aria:'Tracked events', unit:'Events',
+    emptyText:'No events yet. Event tracking fires on PDF downloads and video plays.'});
+  $('ev-table').innerHTML = tableFor(d.events, [
+    {label:'Event', get:function(r){ return prettyEvent(r.name); }},
+    {label:'Count', num:true, get:function(r){ return fmtFull(r.count); }}
+  ], 'Downloads and interactions');
+
+  $('diag-out').textContent = state.demo
+    ? 'Demo mode — no API requests made.'
+    : (diag.length ? JSON.stringify(diag, null, 2) : 'No requests recorded.');
+}
+
+/* ======================= actions ======================= */
+async function refresh(){
+  if(state.demo){ state.data = demoData(); render(); return; }
+  if(!state.code || !state.token){ banner('Enter your site code and API token to connect.','err'); return; }
+  clearBanner();
+  try{
+    state.data = await load();
+    render();
+    if(!state.data.totalViews){
+      banner('Connected, but no pageviews recorded in this period yet. If you only just added the tracking script, visit your homepage once and refresh.','');
+    }
+  }catch(err){
+    $('status').textContent='';
+    banner('<b>Could not load data.</b><br>'+esc(err.message)+
+      '<br><br>Check that the site code is right, that the token has the <b>“Read statistics”</b> permission, and open <b>Diagnostics</b> below for the raw response.','err');
+    $('diag-out').textContent = JSON.stringify(diag, null, 2);
+    $('dash').classList.remove('hide');
+  }
+}
+
+$('connect').addEventListener('click', function(){
+  state.code  = $('code').value.trim().replace(/^https?:\/\//,'').split('.')[0];
+  state.token = $('token').value.trim();
+  state.demo  = false;
+  try{
+    localStorage.setItem('gc_code', state.code);
+    localStorage.setItem('gc_token', state.token);
+  }catch(e){}
+  $('setup').classList.add('hide');
+  refresh();
+});
+
+$('demo').addEventListener('click', function(){
+  state.demo = true;
+  $('setup').classList.add('hide');
+  banner('<b>Demo mode.</b> These are invented numbers showing what the dashboard looks like once tracking is live. Press <b>Settings</b> to connect your real account.','demo');
+  state.data = demoData();
+  render();
+});
+
+$('settings').addEventListener('click', function(){
+  $('setup').classList.toggle('hide');
+  if(!$('setup').classList.contains('hide')) window.scrollTo({top:0, behavior:'smooth'});
+});
+
+$('reload').addEventListener('click', refresh);
+
+document.querySelectorAll('.range').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('.range').forEach(function(o){ o.setAttribute('aria-pressed','false'); });
+    b.setAttribute('aria-pressed','true');
+    state.days = Number(b.dataset.days);
+    refresh();
+  });
+});
+
+document.querySelectorAll('.tbl-toggle').forEach(function(b){
+  b.addEventListener('click', function(){
+    var id = b.dataset.target;
+    var on = b.getAttribute('aria-pressed') === 'true';
+    b.setAttribute('aria-pressed', on ? 'false':'true');
+    b.textContent = on ? 'Table' : 'Chart';
+    $(id+'-chart').classList.toggle('hide', !on ? true : false);
+    $(id+'-table').classList.toggle('hide', !on ? false : true);
+  });
+});
+
+/* re-render charts on resize (SVG is rebuilt to the new width) */
+var rt;
+window.addEventListener('resize', function(){
+  clearTimeout(rt);
+  rt = setTimeout(function(){ if(state.data) render(); }, 180);
+});
+
+/* autostart: ?demo shows sample data; otherwise use saved credentials */
+if(/[?&]demo\b/.test(location.search)){
+  $('demo').click();
+}else if(state.code && state.token){
+  $('setup').classList.add('hide');
+  refresh();
+}
+
+})();
+</script>
+</body>
+</html>
