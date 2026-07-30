@@ -110,7 +110,7 @@
     color:var(--accent); font-weight:700; margin:0 0 1.6rem;
   }
   h1{
-    font-weight:400; font-size:clamp(2.6rem,7.5vw,3.7rem);
+    font-weight:400; font-size:clamp(2rem,5vw,2.55rem);
     line-height:1.02; letter-spacing:-.035em; margin:0 0 .5rem;
   }
   .subtitle{
@@ -142,7 +142,7 @@
     border-top:1px solid var(--line); margin:.7rem auto 0; max-width:var(--measure);
   }
   /* portrait sits in the single column, caption directly beneath it */
-  .portrait-plate{max-width:21rem; margin-top:2.6rem}
+  figure.portrait-plate{max-width:21rem; margin:2.8rem 0 0}
   .portrait-plate img{aspect-ratio:2/3; object-fit:cover}
 
   /* ---------------- sections ---------------- */
@@ -400,7 +400,7 @@
       <button class="navtab" type="button" role="tab" data-go="profile">Profile</button>
       <button class="navtab" type="button" role="tab" data-go="graphdlca">GraphDLCA</button>
       <button class="navtab" type="button" role="tab" data-go="publications">Publications</button>
-      <button class="navtab" type="button" role="tab" data-go="practice">Practice</button>
+      <button class="navtab" type="button" role="tab" data-go="experience">Experience</button>
       <button class="navtab" type="button" role="tab" data-go="teaching">Teaching</button>
       <button class="navtab" type="button" role="tab" data-go="contact">Contact</button>
     </div>
@@ -419,12 +419,6 @@
         <p class="eyebrow">Dr.-Ing. · Technical University of Munich</p>
         <h1>Chujun Zong</h1>
         <p class="subtitle">Dynamic life cycle assessment and sustainable building design</p>
-        <p class="lede">
-          I build methods that let designers see the environmental consequences of a
-          decision <b>while that decision is still open</b>. My work joins dynamic life
-          cycle assessment, optimization across multiple objectives under uncertainty,
-          and the modeling of building and district inventories in graph databases.
-        </p>
         <div class="actions">
           <a href="assets/CV_Chujun_Zong.pdf" target="_blank" rel="noopener">Curriculum vitae</a>
           <a href="assets/Publication_List_Chujun_Zong.pdf" target="_blank" rel="noopener">Publication list</a>
@@ -435,29 +429,18 @@
           <span>chujun.zong@tum.de</span>
           <span>Munich, Germany</span>
           <span>English · German · Mandarin</span>
+        </div>
         <figure class="plate portrait-plate">
-        <img src="assets/portrait.jpg"
-             alt="Chujun Zong wearing the traditional German Doktorhut, hand built by colleagues, after the doctoral defence at the Technical University of Munich">
-        <figcaption>
-          Doctoral defence, Technical University of Munich, 2026.
-          The <em>Doktorhut</em> is a German academic tradition: colleagues build a hat
-          that tells the story of the doctorate it celebrates.
-        </figcaption>
-      </figure>
-      </div>
-      <figure class="plate portrait-plate">
-        <img src="assets/portrait.jpg"
-             alt="Chujun Zong wearing the traditional German Doktorhut, hand built by colleagues, after the doctoral defence at the Technical University of Munich">
-        <figcaption>
-          Doctoral defence, Technical University of Munich, 2026.
-          The <em>Doktorhut</em> is a German academic tradition: colleagues build a hat
-          that tells the story of the doctorate it celebrates.
-        </figcaption>
-      </figure>
+          <img src="assets/portrait.jpg"
+               alt="Chujun Zong wearing the traditional German Doktorhut, hand built by colleagues, after the doctoral defence at the Technical University of Munich">
+          <figcaption>
+            Doctoral defence, Technical University of Munich, 2026.
+            The <em>Doktorhut</em> is a German academic tradition: colleagues build a hat
+            that tells the story of the doctorate it celebrates.
+          </figcaption>
+        </figure>
       </div>
     </div>
-
-
   </div>
 </header>
 </div>
@@ -468,10 +451,6 @@
   <div class="sheet row">
     <div class="col">
       <h2>Research profile</h2>
-      <p class="stmt">
-        Conventional life cycle assessment freezes the world at the moment of
-        calculation. Buildings outlive every one of those assumptions.
-      </p>
       <p>
         I am a doctoral researcher, Dr.-Ing. with distinction (<em>magna cum laude</em>),
         at the Technical University of Munich, at the Chair of Energy Efficient and
@@ -479,20 +458,6 @@
         assessment methodology for the built environment, moving assessment from a
         static and retrospective audit toward an instrument that informs design while
         it is being drawn.
-      </p>
-      <p>
-        A standard assessment fixes the emission factors of the electricity grid, the
-        service life of every component, and the behaviour of the people inside. A
-        building outlasts all three. My work replaces those fixed quantities with
-        models that vary over time, carries the resulting uncertainty explicitly
-        through the calculation rather than hiding it in an average, and delivers the
-        answer early enough in the design process that it can still change the outcome.
-      </p>
-      <p>
-        Across this work I have written first author articles for journals in the top
-        quartile of their field, including <em>Building and Environment</em>,
-        <em>Scientific Reports</em> and <em>Automation in Construction</em>, and I have
-        led two publicly funded research projects at the university.
       </p>
     </div>
   </div>
@@ -647,7 +612,7 @@
         <button class="tab" role="tab" aria-selected="false" data-f="journal">Journals</button>
         <button class="tab" role="tab" aria-selected="false" data-f="conf">Conferences</button>
         <button class="tab" role="tab" aria-selected="false" data-f="first">First author</button>
-        <button class="tab" role="tab" aria-selected="false" data-f="sup">Thesis supervision</button>
+        <button class="tab" role="tab" aria-selected="false" data-f="sup">Published thesis supervision</button>
       </div>
 
       <div id="publist">
@@ -840,11 +805,11 @@
 </div>
 
 <!-- ============================ PRACTICE ============================ -->
-<div class="page" data-page="practice">
+<div class="page" data-page="experience">
 <section id="practice">
   <div class="sheet row">
     <div class="col">
-      <h2>Positions and practice</h2>
+      <h2>Experience</h2>
       <ol class="record">
         <li>
           <span class="when">2022 · 2026</span>
@@ -1016,6 +981,8 @@
           <span class="k">Google Scholar</span><span class="v">Citation profile</span><span class="go">→</span></a></li>
         <li><a href="https://www.researchgate.net/profile/Chujun-Zong" target="_blank" rel="noopener">
           <span class="k">ResearchGate</span><span class="v">Chujun Zong</span><span class="go">→</span></a></li>
+        <li><a href="https://www.linkedin.com/in/LINKEDIN-HANDLE" target="_blank" rel="noopener" id="linkedin-row">
+          <span class="k">LinkedIn</span><span class="v">LINKEDIN-HANDLE</span><span class="go">&#8594;</span></a></li>
         <li><a href="assets/Portfolio_Architecture_Chujun_Zong.pdf" target="_blank" rel="noopener">
           <span class="k">Portfolio</span><span class="v">Architecture portfolio, 2019 (PDF)</span><span class="go">&#8594;</span></a></li>
         <li><div class="row2">
