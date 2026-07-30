@@ -328,7 +328,7 @@
 
       <section class="chart-card">
         <div class="ch-head">
-          <div><h2>Where visitors came from</h2><p class="sub">Referrer / campaign tag</p></div>
+          <div><h2>Where visitors came from</h2><p class="sub">Referrer or campaign tag. Includes section views</p></div>
           <div class="grow"><button class="mini tbl-toggle" data-target="refs" type="button" aria-pressed="false">Table</button></div>
         </div>
         <div id="refs-chart"></div>
@@ -337,7 +337,7 @@
 
       <section class="chart-card">
         <div class="ch-head">
-          <div><h2>Countries</h2><p class="sub">Approximate, from IP address</p></div>
+          <div><h2>Countries</h2><p class="sub">Approximate, from IP address. Includes section views</p></div>
           <div class="grow"><button class="mini tbl-toggle" data-target="geo" type="button" aria-pressed="false">Table</button></div>
         </div>
         <div id="geo-chart"></div>
@@ -439,6 +439,9 @@ function cssVar(name){
 /* ======================= API ======================= */
 function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 
+var GAP = 1200;              /* spacing between requests */
+var rateLimitedUntil = 0;    /* set when GoatCounter answers 429 */
+
 async function api(path, params, attempt){
   attempt = attempt || 1;
   var url = new URL('https://'+state.code+'.goatcounter.com/api/v0'+path);
@@ -453,7 +456,12 @@ async function api(path, params, attempt){
     text = await res.text();
   }catch(err){
     diag.push({endpoint:path, attempt:attempt, error:String(err)});
-    throw new Error('Network or CORS error on '+path+': '+err.message);
+    /* Safari reports a rate-limited CORS preflight as "Load failed" with no
+       status, so treat an unexplained network failure as a probable limit. */
+    rateLimitedUntil = Date.now() + 60000;
+    throw new Error(path + ' could not be reached (' + err.message +
+      '). GoatCounter rate limits bursts of requests; the preflight is most ' +
+      'likely being refused. Wait a minute and press Refresh.');
   }
   var json=null;
   try{ json = JSON.parse(text); }catch(e){}
@@ -461,9 +469,13 @@ async function api(path, params, attempt){
              rateRemaining:res.headers.get('x-rate-limit-remaining'),
              body:(text||'').slice(0,3000)});
   /* GoatCounter allows only a few requests per second; back off and retry once */
-  if(res.status === 429 && attempt < 3){
-    await sleep(1600 * attempt);
-    return api(path, params, attempt + 1);
+  if(res.status === 429){
+    rateLimitedUntil = Date.now() + 60000;
+    if(attempt < 2){
+      await sleep(4000);
+      return api(path, params, attempt + 1);
+    }
+    throw new Error(path + ' is rate limited. Wait a minute and press Refresh.');
   }
   if(!res.ok){
     throw new Error(path+' returned HTTP '+res.status+' '+(text||'').slice(0,200));
@@ -509,50 +521,42 @@ function sumDaily(o){
 async function load(){
   diag = [];
   var start = isoDaysAgo(state.days);
-  var end   = isoDaysAgo(0);
   $('status').textContent = 'Loading…';
 
-  var out = { start:start, end:end, series:[], pages:[], refs:[], geo:[], events:[],
-              totalViews:0, totalVisitors:0, hasUniques:false, failed:[], notes:[], totalSource:'', rawTotal:null, eventTotal:null };
+  var out = { start:start, end:isoDaysAgo(0), series:[], pages:[], refs:[], geo:[], events:[],
+              totalViews:0, totalVisitors:0, hasUniques:false, failed:[], notes:[],
+              totalSource:'', rawTotal:null, eventTotal:null };
 
-  /* --- hits (drives time series, pages and events) ---
-     Try the precise form first, then loosen: drop `daily`, then drop the date
-     range entirely. Whichever shape this GoatCounter version accepts wins, and
-     the note records which one worked. */
-  var hits = null, hitRows = [];
-  /* `end` is exclusive of the current day in this GoatCounter build, which
-     silently dropped today's traffic, so send `start` alone and let the end
-     default to now. The older forms stay as fallbacks. */
-  var hitAttempts = [
-    {label:'start only',    params:{start:start, daily:'true', limit:100}},
-    {label:'start, no daily', params:{start:start, limit:100}},
-    {label:'start and end', params:{start:start, end:end, daily:'true', limit:100}},
-    {label:'default range', params:{limit:100}}
-  ];
-  for(var ai=0; ai<hitAttempts.length; ai++){
-    if(ai) await sleep(700);
-    try{
-      var got = await api('/stats/hits', hitAttempts[ai].params);
-      var rows = (got && (got.hits || got.stats)) || [];
-      if(rows.length){
-        hits = got; hitRows = rows;
-        if(ai) out.notes.push('stats/hits needed the "'+hitAttempts[ai].label+'" form');
-        break;
-      }
-      if(!hits) hits = got;   /* keep the first response for its total field */
-    }catch(e){
-      out.failed.push('stats/hits ('+hitAttempts[ai].label+'): ' + e.message);
+  /* One request per panel. The forms below are the ones this GoatCounter
+     answers; `end` is omitted because it excludes the current day. Each has a
+     single fallback, used only when the response is empty rather than failed,
+     so a normal load costs four requests instead of eleven. */
+  async function pull(path, params, fallback){
+    var json = await api(path, params);
+    var rows = (json && (json.hits || json.stats)) || [];
+    if(!rows.length && fallback){
+      await sleep(GAP);
+      json = await api(path, fallback);
+      rows = (json && (json.hits || json.stats)) || [];
+      if(rows.length) out.notes.push(path + ' needed its fallback form');
     }
+    return {json:json, rows:rows};
   }
-  if(!hitRows.length) out.notes.push('stats/hits returned no rows in any form');
+
+  /* --- 1. hits: time series, sections and interactions --- */
+  var hits = null, hitRows = [];
+  try{
+    var r = await pull('/stats/hits',
+              {start:start, daily:'true', limit:100},
+              {limit:100});
+    hits = r.json; hitRows = r.rows;
+  }catch(e){ out.failed.push('stats/hits: ' + e.message); }
 
   var byDay = {};
   hitRows.forEach(function(h){
     var path = h.path || h.name || '(unknown)';
     var agg = sumDaily(h);
     var total = h.count != null ? Number(h.count) : agg.views;
-    /* Section views are sent as events (path "#profile"), so route those to
-       the sections chart and keep only downloads and plays as interactions. */
     var isInteraction = !!h.event && /^\/?(download-|video-play)/.test(path);
     (isInteraction ? out.events : out.pages).push({ name:path, count:total });
 
@@ -561,17 +565,14 @@ async function load(){
         var key = (d.day || d.date || '').slice(0,10);
         if(!key) return;
         if(!byDay[key]) byDay[key] = {day:key, views:0, uniques:0};
-        byDay[key].views   += Number(d.daily != null ? d.daily : (d.count||0))||0;
-        var u = d.daily_unique != null ? d.daily_unique : d.count_unique;
-        if(u != null){ byDay[key].uniques += Number(u)||0; out.hasUniques = true; }
+        byDay[key].views += dayValue(d);
       });
     }
   });
 
   out.series = Object.keys(byDay).sort().map(function(k){ return byDay[k]; });
-  /* fill gaps so the line doesn't lie about missing days */
   if(out.series.length){
-    var filled=[], cur=new Date(start+'T00:00:00Z'), last=new Date(end+'T00:00:00Z');
+    var filled=[], cur=new Date(start+'T00:00:00Z'), last=new Date(out.end+'T00:00:00Z');
     var map={}; out.series.forEach(function(d){ map[d.day]=d; });
     while(cur <= last){
       var k = cur.toISOString().slice(0,10);
@@ -580,7 +581,6 @@ async function load(){
     }
     out.series = filled;
   }
-
   out.pages.sort(function(a,b){ return b.count-a.count; });
   out.events.sort(function(a,b){ return b.count-a.count; });
 
@@ -589,14 +589,12 @@ async function load(){
                     .reduce(function(s,d){ return s+(Number(d.count)||0); }, 0);
   var hitsTotal = (hits && hits.total != null) ? Number(hits.total) : null;
 
-  /* --- authoritative total, if that endpoint answers --- */
+  /* --- 2. total --- */
   var apiTotal = null;
-  await sleep(700);
+  await sleep(GAP);
   try{
     var tot = await api('/stats/total', {start:start});
     if(tot && tot.total != null){
-      /* `total` counts section events as well as page loads. Subtract the
-         events so the headline is actual visits, not visits x interactions. */
       var ev = (tot.total_events != null) ? Number(tot.total_events) : 0;
       apiTotal = Math.max(0, Number(tot.total) - ev);
       out.rawTotal = Number(tot.total);
@@ -604,9 +602,6 @@ async function load(){
     }
   }catch(e){ out.failed.push('stats/total: ' + e.message); }
 
-  /* Pick the first source that actually has a figure, so a single failing or
-     empty endpoint can never make the headline read zero while the
-     breakdowns below it clearly show traffic. */
   out.totalViews = [apiTotal, hitsTotal, seriesSum, pathSum]
                      .filter(function(v){ return v != null && v > 0; })[0] || 0;
   out.totalSource = apiTotal ? 'stats/total'
@@ -614,53 +609,24 @@ async function load(){
                   : seriesSum ? 'daily series'
                   : pathSum ? 'sum of paths' : 'none';
 
-  /* --- referrers, with the same loosening --- */
-  var refAttempts = [
-    {label:'page loads only', params:{start:start, limit:12, include_paths:'/', path_by_name:'true'}},
-    {label:'start only', params:{start:start, limit:12}},
-    {label:'default range', params:{limit:12}}
-  ];
-  for(var ri=0; ri<refAttempts.length; ri++){
-    await sleep(700);
-    try{
-      var refs = await api('/stats/toprefs', refAttempts[ri].params);
-      var rr = rowsOf(refs).filter(function(d){ return d.count>0; });
-      if(rr.length){
-        out.refs = rr;
-        if(ri) out.notes.push('stats/toprefs needed the "'+refAttempts[ri].label+'" form');
-        break;
-      }
-    }catch(e){ out.failed.push('stats/toprefs ('+refAttempts[ri].label+'): ' + e.message); }
-  }
+  /* --- 3. referrers --- */
+  await sleep(GAP);
+  try{
+    var rr = await pull('/stats/toprefs', {start:start, limit:12}, {limit:12});
+    out.refs = rowsOf(rr.json).filter(function(d){ return d.count>0; });
+  }catch(e){ out.failed.push('stats/toprefs: ' + e.message); }
 
-  /* --- locations --- */
-  var geoAttempts = [
-    {label:'page loads only', params:{start:start, limit:12, include_paths:'/', path_by_name:'true'}},
-    {label:'all hits',        params:{start:start, limit:12}},
-    {label:'default range',   params:{limit:12}}
-  ];
-  for(var gi=0; gi<geoAttempts.length; gi++){
-    await sleep(700);
-    try{
-      var loc = await api('/stats/locations', geoAttempts[gi].params);
-      var gg = rowsOf(loc).filter(function(d){ return d.count>0; });
-      if(gg.length){
-        out.geo = gg;
-        if(gi) out.notes.push('countries counted via "'+geoAttempts[gi].label+'", so they include section views');
-        break;
-      }
-    }catch(e){
-      out.failed.push('stats/locations ('+geoAttempts[gi].label+'): ' + e.message);
-    }
-  }
+  /* --- 4. locations --- */
+  await sleep(GAP);
+  try{
+    var gg = await pull('/stats/locations', {start:start, limit:12}, {limit:12});
+    out.geo = rowsOf(gg.json).filter(function(d){ return d.count>0; });
+  }catch(e){ out.failed.push('stats/locations: ' + e.message); }
 
-  /* last resort: if nothing produced a headline figure but locations did,
-     use those, since every visitor is attributed to some country */
   if(!out.totalViews && out.geo.length){
     out.totalViews = out.geo.reduce(function(s,d){ return s+d.count; }, 0);
     out.totalSource = 'sum of countries';
   }
-
   return out;
 }
 
@@ -1092,6 +1058,13 @@ function render(){
 /* ======================= actions ======================= */
 async function refresh(){
   if(state.demo){ state.data = demoData(); render(); return; }
+  var wait = Math.ceil((rateLimitedUntil - Date.now())/1000);
+  if(wait > 0){
+    banner('<b>Waiting out a rate limit.</b> GoatCounter refused the last burst of '+
+           'requests. Try again in about '+wait+' seconds.', 'err');
+    $('status').textContent = 'rate limited';
+    return;
+  }
   if(!state.code || !state.token){ banner('Enter your site code and API token to connect.','err'); return; }
   clearBanner();
   try{
