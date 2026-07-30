@@ -356,6 +356,10 @@
 
     <details class="diag">
       <summary>Diagnostics — raw API responses</summary>
+      <p style="margin:.4rem 0 .8rem">
+        <button class="mini" type="button" id="diag-copy">Copy to clipboard</button>
+        <span id="diag-copied" style="margin-left:.6rem; color:var(--text-faint)"></span>
+      </p>
       <pre id="diag-out">No requests yet.</pre>
     </details>
   </main>
@@ -508,11 +512,34 @@ async function load(){
   $('status').textContent = 'Loading…';
 
   var out = { start:start, end:end, series:[], pages:[], refs:[], geo:[], events:[],
-              totalViews:0, totalVisitors:0, hasUniques:false, failed:[], totalSource:'' };
+              totalViews:0, totalVisitors:0, hasUniques:false, failed:[], notes:[], totalSource:'' };
 
-  /* --- hits (drives time series, pages and events) --- */
-  var hits = await api('/stats/hits', {start:start, end:end, daily:'true', limit:100});
-  var hitRows = (hits && (hits.hits || hits.stats)) || [];
+  /* --- hits (drives time series, pages and events) ---
+     Try the precise form first, then loosen: drop `daily`, then drop the date
+     range entirely. Whichever shape this GoatCounter version accepts wins, and
+     the note records which one worked. */
+  var hits = null, hitRows = [];
+  var hitAttempts = [
+    {label:'range + daily', params:{start:start, end:end, daily:'true', limit:100}},
+    {label:'range only',    params:{start:start, end:end, limit:100}},
+    {label:'default range', params:{limit:100}}
+  ];
+  for(var ai=0; ai<hitAttempts.length; ai++){
+    if(ai) await sleep(700);
+    try{
+      var got = await api('/stats/hits', hitAttempts[ai].params);
+      var rows = (got && (got.hits || got.stats)) || [];
+      if(rows.length){
+        hits = got; hitRows = rows;
+        if(ai) out.notes.push('stats/hits needed the "'+hitAttempts[ai].label+'" form');
+        break;
+      }
+      if(!hits) hits = got;   /* keep the first response for its total field */
+    }catch(e){
+      out.failed.push('stats/hits ('+hitAttempts[ai].label+'): ' + e.message);
+    }
+  }
+  if(!hitRows.length) out.notes.push('stats/hits returned no rows in any form');
 
   var byDay = {};
   hitRows.forEach(function(h){
@@ -576,12 +603,23 @@ async function load(){
                   : seriesSum ? 'daily series'
                   : pathSum ? 'sum of paths' : 'none';
 
-  /* --- referrers --- */
-  await sleep(700);
-  try{
-    var refs = await api('/stats/toprefs', {start:start, end:end, limit:12});
-    out.refs = rowsOf(refs).filter(function(d){ return d.count>0; });
-  }catch(e){ out.failed.push('stats/toprefs: ' + e.message); }
+  /* --- referrers, with the same loosening --- */
+  var refAttempts = [
+    {label:'range', params:{start:start, end:end, limit:12}},
+    {label:'default range', params:{limit:12}}
+  ];
+  for(var ri=0; ri<refAttempts.length; ri++){
+    await sleep(700);
+    try{
+      var refs = await api('/stats/toprefs', refAttempts[ri].params);
+      var rr = rowsOf(refs).filter(function(d){ return d.count>0; });
+      if(rr.length){
+        out.refs = rr;
+        if(ri) out.notes.push('stats/toprefs needed the "'+refAttempts[ri].label+'" form');
+        break;
+      }
+    }catch(e){ out.failed.push('stats/toprefs ('+refAttempts[ri].label+'): ' + e.message); }
+  }
 
   /* --- locations --- */
   await sleep(700);
@@ -913,10 +951,12 @@ function render(){
   $('status').innerHTML = (state.demo ? '<b>Demo data</b> · ' : '') +
     esc(d.start)+' → '+esc(d.end);
 
-  if(!state.demo && d.failed && d.failed.length){
-    banner('<b>Some data could not be loaded.</b><br>' + d.failed.map(esc).join('<br>') +
+  if(!state.demo && ((d.failed && d.failed.length) || (d.notes && d.notes.length))){
+    var lines = (d.failed||[]).concat(d.notes||[]).map(esc).join('<br>');
+    banner('<b>Data loading notes.</b><br>' + lines +
            '<br><br>Figures below are built from whatever did load. Open ' +
-           '<b>Diagnostics</b> for the raw responses.', 'err');
+           '<b>Diagnostics</b> below and press <b>Copy</b> to share the raw responses.',
+           (d.failed && d.failed.length) ? 'err' : '');
   }
 
   /* hero + tiles */
@@ -1059,6 +1099,20 @@ $('settings').addEventListener('click', function(){
 });
 
 $('reload').addEventListener('click', refresh);
+
+$('diag-copy').addEventListener('click', function(){
+  var t = $('diag-out').textContent || '';
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(function(){
+      $('diag-copied').textContent = 'copied';
+      setTimeout(function(){ $('diag-copied').textContent=''; }, 2000);
+    });
+  }else{
+    var r = document.createRange(); r.selectNodeContents($('diag-out'));
+    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    $('diag-copied').textContent = 'selected, press Cmd+C';
+  }
+});
 
 document.querySelectorAll('.range').forEach(function(b){
   b.addEventListener('click', function(){
