@@ -191,6 +191,7 @@
   .slider .when{font-size:.72rem; letter-spacing:.12em; color:var(--accent); font-weight:700}
   .slider h3{font-size:1rem; font-weight:700; margin:.35rem 0 .5rem; letter-spacing:-.01em}
   .slider p{font-size:.9rem; margin:0}
+  .slider .plink{margin-top:.75rem; font-size:.86rem}
   .slider .j{font-size:.92rem; color:var(--text-soft); align-content:center}
 
   /* ---------------- record list (experience, education) ---------------- */
@@ -344,7 +345,7 @@
   ul.links{list-style:none; margin:0; padding:0; border-top:1px solid var(--line)}
   ul.links li{border-bottom:1px solid var(--line-soft)}
   ul.links a, ul.links .row2{
-    display:grid; grid-template-columns:8.5rem 1fr auto; gap:1rem;
+    display:grid; grid-template-columns:10.5rem 1fr auto; gap:1rem;
     padding:.85rem 0; color:var(--text); align-items:baseline;
   }
   @media(max-width:560px){
@@ -401,7 +402,7 @@
       <button class="navtab" type="button" role="tab" data-go="graphdlca">GraphDLCA</button>
       <button class="navtab" type="button" role="tab" data-go="publications">Publications</button>
       <button class="navtab" type="button" role="tab" data-go="experience">Experience</button>
-      <button class="navtab" type="button" role="tab" data-go="teaching">Teaching</button>
+      <button class="navtab" type="button" role="tab" data-go="honors">Honors and awards</button>
       <button class="navtab" type="button" role="tab" data-go="contact">Contact</button>
     </div>
     <button id="theme" type="button" aria-label="Toggle colour theme" title="Toggle colour theme">◐</button>
@@ -879,33 +880,7 @@
   </div>
 </section>
 
-<!-- ============================ PROJECTS ============================ -->
-<section id="projects">
-  <div class="sheet row">
-    <div class="col" style="max-width:none">
-      <div class="slider-head">
-        <h2 style="margin:0">Funded research projects</h2>
-        <span class="hint">Scroll →</span>
-      </div>
-      <div class="slider" tabindex="0" role="group" aria-label="Funded research projects, scrollable">
-        <div>
-          <span class="when">2022 · 2025</span>
-          <h3>CircularGreenSimCity</h3>
-          <p>Holistic life cycle assessment of urban districts. Funded by the German Federal Ministry for Economic Affairs and Climate Action.</p>
-        </div>
-        <div>
-          <span class="when">2022 · 2024</span>
-          <h3>EarlyBIM2</h3>
-          <p>Knowledge database and machine learning assistance for performance oriented building. Funded by the German Research Foundation.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-</div>
-
 <!-- ============================ TEACHING ============================ -->
-<div class="page" data-page="teaching">
 <section id="teaching">
   <div class="sheet row">
     <div class="col">
@@ -938,11 +913,41 @@
   </div>
 </section>
 
+<!-- ============================ PROJECTS ============================ -->
+<section id="projects">
+  <div class="sheet row">
+    <div class="col" style="max-width:none">
+      <div class="slider-head">
+        <h2 style="margin:0">Funded research projects</h2>
+        <span class="hint">Scroll →</span>
+      </div>
+      <div class="slider" tabindex="0" role="group" aria-label="Funded research projects, scrollable">
+        <div>
+          <span class="when">2022 · 2025</span>
+          <h3>CircularGreenSimCity</h3>
+          <p>Holistic life cycle assessment of urban districts. Funded by the German Federal Ministry for Economic Affairs and Climate Action.</p>
+          <p class="plink"><a href="https://circulargreensimcity.hft-stuttgart.de" target="_blank" rel="noopener">Graphical user interface &#8599;</a></p>
+        </div>
+        <div>
+          <span class="when">2022 · 2024</span>
+          <h3>EarlyBIM2</h3>
+          <p>Knowledge database and machine learning assistance for performance oriented building. Funded by the German Research Foundation.</p>
+          <p class="plink"><a href="https://zenodo.org/records/10962088" target="_blank" rel="noopener">EarlyData database on Zenodo &#8599;</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="page" data-page="honors">
+
+
 <!-- ============================ HONOURS ============================ -->
 <section id="honours">
   <div class="sheet row">
     <div class="col">
-      <h2>Honours and awards</h2>
+      <h2>Honors and awards</h2>
       <ul class="notes">
         <li>
           <b>Doce et Delecta Teaching Award, First Place.</b>
@@ -974,15 +979,17 @@
       </p>
       <ul class="links">
         <li><a href="mailto:chujun.zong@tum.de">
-          <span class="k">Email</span><span class="v">chujun.zong@tum.de</span><span class="go">→</span></a></li>
+          <span class="k">Email, university</span><span class="v">chujun.zong@tum.de</span><span class="go">→</span></a></li>
+        <li><a href="mailto:jana.zong@live.cn">
+          <span class="k">Email, personal</span><span class="v">jana.zong@live.cn</span><span class="go">→</span></a></li>
         <li><a href="https://orcid.org/0000-0001-6916-9451" target="_blank" rel="noopener">
           <span class="k">ORCID</span><span class="v">0000-0001-6916-9451</span><span class="go">→</span></a></li>
         <li><a href="https://scholar.google.com/citations?user=H9Apm50AAAAJ" target="_blank" rel="noopener">
           <span class="k">Google Scholar</span><span class="v">Citation profile</span><span class="go">→</span></a></li>
         <li><a href="https://www.researchgate.net/profile/Chujun-Zong" target="_blank" rel="noopener">
           <span class="k">ResearchGate</span><span class="v">Chujun Zong</span><span class="go">→</span></a></li>
-        <li><a href="https://www.linkedin.com/in/LINKEDIN-HANDLE" target="_blank" rel="noopener" id="linkedin-row">
-          <span class="k">LinkedIn</span><span class="v">LINKEDIN-HANDLE</span><span class="go">&#8594;</span></a></li>
+        <li><a href="https://www.linkedin.com/in/chujun-zong-1b18b1119/" target="_blank" rel="noopener">
+          <span class="k">LinkedIn</span><span class="v">chujun-zong-1b18b1119</span><span class="go">&#8594;</span></a></li>
         <li><a href="assets/Portfolio_Architecture_Chujun_Zong.pdf" target="_blank" rel="noopener">
           <span class="k">Portfolio</span><span class="v">Architecture portfolio, 2019 (PDF)</span><span class="go">&#8594;</span></a></li>
         <li><div class="row2">
