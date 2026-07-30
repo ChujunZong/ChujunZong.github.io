@@ -435,7 +435,8 @@ function cssVar(name){
 /* ======================= API ======================= */
 function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 
-async function api(path, params){
+async function api(path, params, attempt){
+  attempt = attempt || 1;
   var url = new URL('https://'+state.code+'.goatcounter.com/api/v0'+path);
   Object.keys(params||{}).forEach(function(k){
     if(params[k]!=null) url.searchParams.set(k, params[k]);
@@ -447,14 +448,21 @@ async function api(path, params){
     });
     text = await res.text();
   }catch(err){
-    diag.push({endpoint:path, error:String(err)});
-    throw new Error('Network/CORS error on '+path+': '+err.message);
+    diag.push({endpoint:path, attempt:attempt, error:String(err)});
+    throw new Error('Network or CORS error on '+path+': '+err.message);
   }
   var json=null;
   try{ json = JSON.parse(text); }catch(e){}
-  diag.push({endpoint:path, status:res.status, body:(text||'').slice(0,3000)});
+  diag.push({endpoint:path, attempt:attempt, status:res.status,
+             rateRemaining:res.headers.get('x-rate-limit-remaining'),
+             body:(text||'').slice(0,3000)});
+  /* GoatCounter allows only a few requests per second; back off and retry once */
+  if(res.status === 429 && attempt < 3){
+    await sleep(1600 * attempt);
+    return api(path, params, attempt + 1);
+  }
   if(!res.ok){
-    throw new Error(path+' → HTTP '+res.status+' '+(text||'').slice(0,220));
+    throw new Error(path+' returned HTTP '+res.status+' '+(text||'').slice(0,200));
   }
   return json;
 }
@@ -473,12 +481,19 @@ function rowsOf(json){
     return { name:String(name), count:Number(count)||0, raw:o };
   });
 }
+function dayValue(d){
+  /* prefer an explicit daily figure; otherwise add up the hourly buckets */
+  if(d.daily != null) return Number(d.daily)||0;
+  if(d.count != null) return Number(d.count)||0;
+  if(Array.isArray(d.hourly)) return d.hourly.reduce(function(a,b){ return a+(Number(b)||0); }, 0);
+  return 0;
+}
 function sumDaily(o){
   var v=0, u=0;
   var st = o && o.stats;
   if(Array.isArray(st)){
     st.forEach(function(d){
-      v += Number(d.daily != null ? d.daily : (d.count != null ? d.count : 0))||0;
+      v += dayValue(d);
       u += Number(d.daily_unique != null ? d.daily_unique : (d.count_unique != null ? d.count_unique : 0))||0;
     });
   }
@@ -493,7 +508,7 @@ async function load(){
   $('status').textContent = 'Loading…';
 
   var out = { start:start, end:end, series:[], pages:[], refs:[], geo:[], events:[],
-              totalViews:0, totalVisitors:0, hasUniques:false };
+              totalViews:0, totalVisitors:0, hasUniques:false, failed:[], totalSource:'' };
 
   /* --- hits (drives time series, pages and events) --- */
   var hits = await api('/stats/hits', {start:start, end:end, daily:'true', limit:100});
@@ -534,32 +549,53 @@ async function load(){
 
   out.pages.sort(function(a,b){ return b.count-a.count; });
   out.events.sort(function(a,b){ return b.count-a.count; });
-  out.totalViews = out.series.reduce(function(s,d){ return s+d.views; }, 0);
-  out.totalVisitors = out.series.reduce(function(s,d){ return s+d.uniques; }, 0);
 
-  /* --- total (authoritative if available) --- */
-  await sleep(300);
+  var seriesSum = out.series.reduce(function(s,d){ return s+d.views; }, 0);
+  var pathSum   = out.pages.concat(out.events)
+                    .reduce(function(s,d){ return s+(Number(d.count)||0); }, 0);
+  var hitsTotal = (hits && hits.total != null) ? Number(hits.total) : null;
+
+  /* --- authoritative total, if that endpoint answers --- */
+  var apiTotal = null;
+  await sleep(700);
   try{
     var tot = await api('/stats/total', {start:start, end:end});
-    if(tot){
-      if(tot.total != null) out.totalViews = Number(tot.total)||out.totalViews;
-      if(tot.total_unique != null){ out.totalVisitors = Number(tot.total_unique); out.hasUniques = true; }
+    if(tot && tot.total != null) apiTotal = Number(tot.total);
+    if(tot && tot.total_unique != null){
+      out.totalVisitors = Number(tot.total_unique); out.hasUniques = true;
     }
-  }catch(e){ /* non-fatal */ }
+  }catch(e){ out.failed.push('stats/total: ' + e.message); }
+
+  /* Pick the first source that actually has a figure, so a single failing or
+     empty endpoint can never make the headline read zero while the
+     breakdowns below it clearly show traffic. */
+  out.totalViews = [apiTotal, hitsTotal, seriesSum, pathSum]
+                     .filter(function(v){ return v != null && v > 0; })[0] || 0;
+  out.totalSource = apiTotal ? 'stats/total'
+                  : hitsTotal ? 'stats/hits total'
+                  : seriesSum ? 'daily series'
+                  : pathSum ? 'sum of paths' : 'none';
 
   /* --- referrers --- */
-  await sleep(300);
+  await sleep(700);
   try{
     var refs = await api('/stats/toprefs', {start:start, end:end, limit:12});
     out.refs = rowsOf(refs).filter(function(d){ return d.count>0; });
-  }catch(e){}
+  }catch(e){ out.failed.push('stats/toprefs: ' + e.message); }
 
   /* --- locations --- */
-  await sleep(300);
+  await sleep(700);
   try{
     var loc = await api('/stats/locations', {start:start, end:end, limit:12});
     out.geo = rowsOf(loc).filter(function(d){ return d.count>0; });
-  }catch(e){}
+  }catch(e){ out.failed.push('stats/locations: ' + e.message); }
+
+  /* last resort: if nothing produced a headline figure but locations did,
+     use those, since every visitor is attributed to some country */
+  if(!out.totalViews && out.geo.length){
+    out.totalViews = out.geo.reduce(function(s,d){ return s+d.count; }, 0);
+    out.totalSource = 'sum of countries';
+  }
 
   return out;
 }
@@ -877,12 +913,20 @@ function render(){
   $('status').innerHTML = (state.demo ? '<b>Demo data</b> · ' : '') +
     esc(d.start)+' → '+esc(d.end);
 
+  if(!state.demo && d.failed && d.failed.length){
+    banner('<b>Some data could not be loaded.</b><br>' + d.failed.map(esc).join('<br>') +
+           '<br><br>Figures below are built from whatever did load. Open ' +
+           '<b>Diagnostics</b> for the raw responses.', 'err');
+  }
+
   /* hero + tiles */
   $('k-views').textContent = fmt(d.totalViews);
   var nDays = Math.max(1, (d.series||[]).length);
   var perDay = d.totalViews / nDays;
   $('k-views-meta').textContent = periodTxt +
-    (d.totalViews ? ' · ' + (perDay>=10 ? Math.round(perDay) : perDay.toFixed(1)) + ' per day average' : '');
+    (d.totalViews ? ' · ' + (perDay>=10 ? Math.round(perDay) : perDay.toFixed(1)) + ' per day average' : '') +
+    (!state.demo && d.totalSource && d.totalSource !== 'stats/total' && d.totalViews
+       ? ' · via ' + d.totalSource : '');
 
   /* busiest day — GoatCounter's API has no unique/total split, so show peak instead */
   var peak = (d.series||[]).reduce(function(a,b){ return b.views > (a?a.views:-1) ? b : a; }, null);
