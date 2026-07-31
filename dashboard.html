@@ -337,8 +337,11 @@
 
       <section class="chart-card">
         <div class="ch-head">
-          <div><h2>Countries</h2><p class="sub" id="geo-sub">Approximate, from IP address</p></div>
-          <div class="grow"><button class="mini tbl-toggle" data-target="geo" type="button" aria-pressed="false">Table</button></div>
+          <div><h2 id="geo-title">Locations</h2><p class="sub" id="geo-sub">Approximate, from IP address</p></div>
+          <div class="grow">
+            <button class="mini hide" id="geo-back" type="button">&#8592; All countries</button>
+            <button class="mini tbl-toggle" data-target="geo" type="button" aria-pressed="false">Table</button>
+          </div>
         </div>
         <div id="geo-chart"></div>
         <div id="geo-table" class="hide"></div>
@@ -507,7 +510,7 @@ function rowsOf(json){
     var count = o.count;
     if(count == null) count = o.total;
     if(count == null) count = sumDaily(o).views;
-    return { name:String(name), count:Number(count)||0, raw:o };
+    return { name:String(name), count:Number(count)||0, raw:o, id:o.id };
   });
 }
 function dayValue(d){
@@ -635,6 +638,7 @@ async function load(){
     return o;
   }
   out.visitorScoped = !!visitorFilter;
+  state.pageIds = pageIds;
 
   /* --- 3. referrers --- */
   await sleep(GAP);
@@ -709,14 +713,14 @@ function demoData(){
       {name:'x.com', count:Math.round(tv*0.03)}
     ],
     geo:[
-      {name:'Germany', count:Math.round(tv*0.38)},
-      {name:'China', count:Math.round(tv*0.14)},
-      {name:'Australia', count:Math.round(tv*0.11)},
-      {name:'Switzerland', count:Math.round(tv*0.09)},
-      {name:'Netherlands', count:Math.round(tv*0.07)},
-      {name:'United Kingdom', count:Math.round(tv*0.06)},
-      {name:'Denmark', count:Math.round(tv*0.05)},
-      {name:'United States', count:Math.round(tv*0.05)}
+      {name:'Germany', id:'DE', raw:{id:'DE'}, count:Math.round(tv*0.38)},
+      {name:'China', id:'CN', raw:{id:'CN'}, count:Math.round(tv*0.14)},
+      {name:'Australia', id:'AU', raw:{id:'AU'}, count:Math.round(tv*0.11)},
+      {name:'Switzerland', id:'CH', raw:{id:'CH'}, count:Math.round(tv*0.09)},
+      {name:'Netherlands', id:'NL', raw:{id:'NL'}, count:Math.round(tv*0.07)},
+      {name:'United Kingdom', id:'GB', raw:{id:'GB'}, count:Math.round(tv*0.06)},
+      {name:'Denmark', id:'DK', raw:{id:'DK'}, count:Math.round(tv*0.05)},
+      {name:'United States', id:'US', raw:{id:'US'}, count:Math.round(tv*0.05)}
     ],
     systems:[
       {name:'macOS', count:Math.round(tv*0.34)},
@@ -732,6 +736,16 @@ function demoData(){
       {name:'download-Publication_List_Chujun_Zong.pdf', count:16}
     ]
   };
+}
+
+function demoRegions(row){
+  var seedSets = {
+    'Germany':[['Bavaria',.42],['Berlin',.21],['North Rhine-Westphalia',.16],['Hamburg',.12],['Saxony',.09]],
+    'China':[['Shanghai',.38],['Beijing',.27],['Guangdong',.20],['Jiangsu',.15]],
+    'Australia':[['Victoria',.46],['New South Wales',.33],['Queensland',.21]]
+  };
+  var set = seedSets[row.name] || [['Capital region',.55],['Elsewhere',.45]];
+  return set.map(function(r){ return {name:r[0], count:Math.max(1,Math.round(row.count*r[1])), raw:{}}; });
 }
 
 /* ======================= chart helpers ======================= */
@@ -925,6 +939,9 @@ function barChart(mount, rows, opts){
     svg.appendChild(el('text',{x:m.l+w+9, y:y+barH/2+4, 'font-size':11.5,
       'font-weight':700, fill:cMut}, fmtFull(d.count)));
 
+    if(opts.onSelect && d.raw && d.raw.id){
+      bar.style.cursor = 'pointer';
+    }
     function over(ev){
       bar.setAttribute('fill-opacity', 0.82);
       showTip('<div class="t-title">'+esc(label)+'</div>'+
@@ -935,10 +952,14 @@ function barChart(mount, rows, opts){
     function out(){ bar.setAttribute('fill-opacity', 1); hideTip(); }
 
     /* hit target spans the whole band, wider than the mark */
+    var clickable = !!(opts.onSelect && d.raw && d.raw.id);
     var hit = el('rect',{x:m.l, y:m.t+i*band, width:iw+m.r-6, height:band,
-      fill:'transparent', style:'cursor:default'});
+      fill:'transparent', style:'cursor:' + (clickable ? 'pointer' : 'default')});
     hit.addEventListener('mousemove', over);
     hit.addEventListener('mouseleave', out);
+    if(clickable){
+      hit.addEventListener('click', function(){ hideTip(); opts.onSelect(d); });
+    }
     svg.appendChild(hit);
   });
 
@@ -1102,13 +1123,51 @@ function render(){
   if($('geo-sub'))  $('geo-sub').textContent  = 'Approximate, from IP address' + scopeNote;
   if($('refs-sub')) $('refs-sub').textContent = 'Referrer or campaign tag' + scopeNote;
 
-  barChart($('geo-chart'), d.geo, {aria:'Visitors by country', unit:'Visitors',
-    emptyText:'No location data yet.'});
-  $('geo-table').innerHTML = tableFor(d.geo, [
-    {label:'Country', get:function(r){ return r.name; }},
-    {label:'Visitors', num:true, get:function(r){ return fmtFull(r.count); }}
-  ], 'Visitors by country');
+  function drawGeo(rows, title, sub, isDetail){
+    $('geo-title').textContent = title;
+    $('geo-sub').textContent = sub;
+    $('geo-back').classList.toggle('hide', !isDetail);
+    barChart($('geo-chart'), rows, {
+      aria:'Visitors by location', unit:'Visitors',
+      emptyText: isDetail ? 'No region detail for this country.' : 'No location data yet.',
+      onSelect: isDetail ? null : function(row){ openRegions(row); }
+    });
+    $('geo-table').innerHTML = tableFor(rows, [
+      {label: isDetail ? 'Region' : 'Country', get:function(r){ return r.name; }},
+      {label:'Visitors', num:true, get:function(r){ return fmtFull(r.count); }}
+    ], title);
+  }
 
+  async function openRegions(row){
+    var id = row.id || (row.raw && row.raw.id);
+    if(!id) return;
+    if(state.demo){
+      drawGeo(demoRegions(row), row.name + ', by region',
+              'Demo regions inside ' + row.name, true);
+      return;
+    }
+    $('geo-sub').textContent = 'loading regions…';
+    try{
+      var params = {start:d.start, limit:12};
+      if(state.pageIds && state.pageIds.length) params.include_paths = state.pageIds;
+      var det = await api('/stats/locations/' + encodeURIComponent(id), params);
+      var rows = rowsOf(det).filter(function(x){ return x.count>0; });
+      drawGeo(rows, row.name + ', by region',
+        rows.length ? 'Regions inside ' + row.name
+                    : 'No region detail recorded. Enable Region under Settings, Data collection.',
+        true);
+    }catch(e){
+      drawGeo([], row.name + ', by region', 'Could not load regions: ' + e.message, true);
+    }
+  }
+
+  $('geo-back').onclick = function(){
+    drawGeo(d.geo, 'Locations',
+      'Approximate, from IP address' + scopeNote + '. Select a country for regions');
+  };
+
+  drawGeo(d.geo, 'Locations',
+    'Approximate, from IP address' + scopeNote + '. Select a country for regions');
   barChart($('sys-chart'), d.systems, {pretty:prettySystem, aria:'Visitors by operating system', unit:'Visitors',
     emptyText:'No device data yet.'});
   $('sys-table').innerHTML = tableFor(d.systems, [
