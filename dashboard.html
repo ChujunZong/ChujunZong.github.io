@@ -358,6 +358,24 @@
 
       <section class="chart-card">
         <div class="ch-head">
+          <div><h2>Browsers</h2><p class="sub">Browser family, from the user agent</p></div>
+          <div class="grow"><button class="mini tbl-toggle" data-target="brw" type="button" aria-pressed="false">Table</button></div>
+        </div>
+        <div id="brw-chart"></div>
+        <div id="brw-table" class="hide"></div>
+      </section>
+
+      <section class="chart-card">
+        <div class="ch-head">
+          <div><h2>Languages</h2><p class="sub">Preferred language set in the browser</p></div>
+          <div class="grow"><button class="mini tbl-toggle" data-target="lng" type="button" aria-pressed="false">Table</button></div>
+        </div>
+        <div id="lng-chart"></div>
+        <div id="lng-table" class="hide"></div>
+      </section>
+
+      <section class="chart-card">
+        <div class="ch-head">
           <div><h2>Downloads &amp; interactions</h2><p class="sub">Tracked events</p></div>
           <div class="grow"><button class="mini tbl-toggle" data-target="ev" type="button" aria-pressed="false">Table</button></div>
         </div>
@@ -453,6 +471,7 @@ function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 
 var GAP = 1200;              /* spacing between requests */
 var rateLimitedUntil = 0;    /* set when GoatCounter answers 429 */
+var lastLoadAt = 0;          /* a full load is eight requests, so throttle repeats */
 
 async function api(path, params, attempt){
   attempt = attempt || 1;
@@ -541,7 +560,7 @@ async function load(){
   var out = { start:start, end:isoDaysAgo(0), series:[], pages:[], refs:[], geo:[], events:[],
               totalViews:0, totalVisitors:0, hasUniques:false, failed:[], notes:[],
               totalSource:'', rawTotal:null, eventTotal:null,
-              systems:[], visitorScoped:false };
+              systems:[], browsers:[], languages:[], visitorScoped:false };
 
   /* One request per panel. The forms below are the ones this GoatCounter
      answers; `end` is omitted because it excludes the current day. Each has a
@@ -667,6 +686,24 @@ async function load(){
     out.systems = rowsOf(sy.json).filter(function(d){ return d.count>0; });
   }catch(e){ out.failed.push('stats/systems: ' + e.message); }
 
+  /* --- 6. browsers --- */
+  await sleep(GAP);
+  try{
+    var br = await pull('/stats/browsers',
+                        withFilter({start:start, limit:12}),
+                        {start:start, limit:12});
+    out.browsers = rowsOf(br.json).filter(function(d){ return d.count>0; });
+  }catch(e){ out.failed.push('stats/browsers: ' + e.message); }
+
+  /* --- 7. languages --- */
+  await sleep(GAP);
+  try{
+    var lg = await pull('/stats/languages',
+                        withFilter({start:start, limit:12}),
+                        {start:start, limit:12});
+    out.languages = rowsOf(lg.json).filter(function(d){ return d.count>0; });
+  }catch(e){ out.failed.push('stats/languages: ' + e.message); }
+
   if(!out.totalViews && out.geo.length){
     out.totalViews = out.geo.reduce(function(s,d){ return s+d.count; }, 0);
     out.totalSource = 'sum of countries';
@@ -728,6 +765,20 @@ function demoData(){
       {name:'iOS', count:Math.round(tv*0.19)},
       {name:'Android', count:Math.round(tv*0.12)},
       {name:'Linux', count:Math.round(tv*0.07)}
+    ],
+    browsers:[
+      {name:'Chrome', count:Math.round(tv*0.44)},
+      {name:'Safari', count:Math.round(tv*0.31)},
+      {name:'Firefox', count:Math.round(tv*0.13)},
+      {name:'Edge', count:Math.round(tv*0.09)},
+      {name:'Other', count:Math.round(tv*0.03)}
+    ],
+    languages:[
+      {name:'en', count:Math.round(tv*0.41)},
+      {name:'de', count:Math.round(tv*0.33)},
+      {name:'zh', count:Math.round(tv*0.12)},
+      {name:'nl', count:Math.round(tv*0.08)},
+      {name:'fr', count:Math.round(tv*0.06)}
     ],
     visitorScoped:true,
     events:[
@@ -993,6 +1044,22 @@ function prettyPath(p){
   };
   return map[key] || p;
 }
+var langNamer = null;
+try{ langNamer = new Intl.DisplayNames(['en'], {type:'language'}); }catch(e){}
+function prettyLanguage(n){
+  var t = String(n||'').trim();
+  if(!t || /^unknown/i.test(t)) return 'Unknown';
+  /* the tag may already be a readable name, in which case leave it alone */
+  if(/[^a-z0-9-]/i.test(t) && t.length > 5 && t.indexOf('-') === -1) return t;
+  if(langNamer){
+    try{
+      var name = langNamer.of(t);
+      if(name && name.toLowerCase() !== t.toLowerCase()) return name;
+    }catch(e){}
+  }
+  return t;
+}
+
 function prettySystem(n){
   var s = String(n||'').trim();
   if(!s || /^unknown/i.test(s)) return 'Unknown device';
@@ -1175,6 +1242,20 @@ function render(){
     {label:'Visitors', num:true, get:function(r){ return fmtFull(r.count); }}
   ], 'Visitors by operating system');
 
+  barChart($('brw-chart'), d.browsers, {aria:'Visitors by browser', unit:'Visitors',
+    emptyText:'No browser data yet.'});
+  $('brw-table').innerHTML = tableFor(d.browsers, [
+    {label:'Browser', get:function(r){ return r.name; }},
+    {label:'Visitors', num:true, get:function(r){ return fmtFull(r.count); }}
+  ], 'Visitors by browser');
+
+  barChart($('lng-chart'), d.languages, {pretty:prettyLanguage, aria:'Visitors by language', unit:'Visitors',
+    emptyText:'No language data yet.'});
+  $('lng-table').innerHTML = tableFor(d.languages, [
+    {label:'Language', get:function(r){ return prettyLanguage(r.name); }},
+    {label:'Visitors', num:true, get:function(r){ return fmtFull(r.count); }}
+  ], 'Visitors by language');
+
   barChart($('ev-chart'), d.events, {pretty:prettyEvent, aria:'Tracked events', unit:'Events',
     emptyText:'No events yet. Event tracking fires on PDF downloads and video plays.'});
   $('ev-table').innerHTML = tableFor(d.events, [
@@ -1190,6 +1271,12 @@ function render(){
 /* ======================= actions ======================= */
 async function refresh(){
   if(state.demo){ state.data = demoData(); render(); return; }
+  var since = Math.ceil((15000 - (Date.now() - lastLoadAt))/1000);
+  if(lastLoadAt && since > 0){
+    banner('A full refresh makes eight requests. Please wait about ' + since +
+           ' more seconds so GoatCounter does not rate limit the account.', '');
+    return;
+  }
   var wait = Math.ceil((rateLimitedUntil - Date.now())/1000);
   if(wait > 0){
     banner('<b>Waiting out a rate limit.</b> GoatCounter refused the last burst of '+
@@ -1200,6 +1287,7 @@ async function refresh(){
   if(!state.code || !state.token){ banner('Enter your site code and API token to connect.','err'); return; }
   clearBanner();
   try{
+    lastLoadAt = Date.now();
     state.data = await load();
     render();
     if(!state.data.totalViews){
