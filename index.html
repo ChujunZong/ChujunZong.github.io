@@ -100,7 +100,7 @@
   }
 
   *{box-sizing:border-box}
-  html{scroll-behavior:smooth; scroll-padding-top:64px; -webkit-text-size-adjust:100%}
+  html{scroll-behavior:smooth; scroll-padding-top:72px; -webkit-text-size-adjust:100%}
   body{
     margin:0; background:var(--bg); color:var(--text);
     font-family:var(--sans); font-size:16px; line-height:1.72;
@@ -125,15 +125,25 @@
     border-bottom:1px solid var(--line);
   }
   .nav-in{
-    display:flex; align-items:center; gap:6px; height:56px;
-    max-width:var(--page); margin:0 auto; padding:0 32px;
+    display:flex; align-items:center; gap:4px; height:64px;
+    max-width:76rem; margin:0 auto; padding:0 32px;
   }
   @media(max-width:640px){ .nav-in{padding:0 22px} }
   .nav-name{
-    font-size:.78rem; letter-spacing:.16em; text-transform:uppercase;
-    font-weight:700; margin-right:auto; white-space:nowrap;
+    font-size:.74rem; letter-spacing:.16em; text-transform:uppercase;
+    font-weight:700; margin-right:1.4rem; white-space:nowrap;
+    color:var(--text-faint); flex:none;
   }
-  .nav-links{display:flex; gap:0}
+  /* the tab strip takes the remaining width and scrolls rather than pushing
+     the theme control off the edge on narrower screens */
+  /* margin-left:auto right-aligns the strip when there is room. Using it
+     instead of justify-content:flex-end matters: with flex-end an overflowing
+     strip hides its first item off the left edge, taking the active tab with it. */
+  .nav-links{
+    display:flex; gap:0; flex:0 1 auto; min-width:0; margin-left:auto;
+    overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none;
+  }
+  .nav-links::-webkit-scrollbar{display:none}
   .nav-links a{
     color:var(--text-faint); font-size:.72rem; letter-spacing:.12em;
     text-transform:uppercase; padding:6px 11px;
@@ -145,9 +155,7 @@
     display:grid; place-items:center; flex:none; margin-left:10px; border-radius:0;
   }
   #theme:hover{color:var(--text); border-color:var(--text-faint)}
-  @media(max-width:860px){
-    .nav-links{overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none}
-    .nav-links::-webkit-scrollbar{display:none}
+  @media(max-width:1100px){
     .nav-name{display:none}
   }
 
@@ -196,7 +204,7 @@
   /* ---------------- sections ---------------- */
   /* a page fills the screen; the sections inside it stack normally */
   .page{
-    min-height:calc(100vh - 57px);
+    min-height:calc(100vh - 65px);
     display:flex; flex-direction:column; justify-content:center;
     padding:3rem 0 4rem;
   }
@@ -327,8 +335,8 @@
 
   .navtab{
     font-family:inherit; background:none; border:0; cursor:pointer;
-    color:var(--text-faint); font-size:.72rem; letter-spacing:.12em;
-    text-transform:uppercase; padding:6px 11px;
+    color:var(--text-soft); font-size:.86rem; font-weight:700; letter-spacing:.07em;
+    text-transform:uppercase; padding:9px 11px; white-space:nowrap;
     border-bottom:2px solid transparent;
   }
   .navtab:hover{color:var(--text)}
@@ -447,9 +455,9 @@
     <div class="nav-links" role="tablist" aria-label="Sections">
       <button class="navtab" type="button" role="tab" data-go="home">Home</button>
       <button class="navtab" type="button" role="tab" data-go="profile">Profile</button>
-      <button class="navtab" type="button" role="tab" data-go="graphdlca">GraphDLCA</button>
-      <button class="navtab" type="button" role="tab" data-go="publications">Publications</button>
       <button class="navtab" type="button" role="tab" data-go="experience">Experience</button>
+      <button class="navtab" type="button" role="tab" data-go="publications">Publications</button>
+      <button class="navtab" type="button" role="tab" data-go="graphdlca">GraphDLCA</button>
       <button class="navtab" type="button" role="tab" data-go="honors">Honors and awards</button>
       <button class="navtab" type="button" role="tab" data-go="contact">Contact</button>
     </div>
@@ -458,7 +466,6 @@
 </nav>
 
 <main id="main">
-
 <!-- ============================ HERO ============================ -->
 <div class="page" data-page="home">
 <header class="hero">
@@ -493,7 +500,6 @@
   </div>
 </header>
 </div>
-
 <!-- ============================ PROFILE ============================ -->
 <div class="page" data-page="profile">
 <section id="profile">
@@ -530,65 +536,136 @@
   </div>
 </section>
 </div>
-
-<!-- ============================ GRAPHDLCA ============================ -->
-<div class="page" data-page="graphdlca">
-<section id="graphdlca">
-  <div class="sheet">
-    <div class="row">
-      <div class="col">
-        <h2>GraphDLCA</h2>
-        <p class="stmt">
-          A graph database structure and calculation framework for automated dynamic
-          life cycle assessment of buildings.
-        </p>
-        <p>
-          GraphDLCA reorganises the building inventory as a property graph rather than
-          a spreadsheet. Components, materials, replacement events and impact factors
-          become nodes. The relationships between them, in composition and in time,
-          become edges that can be traversed.
-        </p>
-        <p>
-          Because time is modelled inside the graph instead of being added to a static
-          calculation afterwards, a dynamic assessment becomes a query rather than a
-          manual rebuild.
-        </p>
-      </div>
+<!-- ============================ PRACTICE ============================ -->
+<div class="page" data-page="experience">
+<section id="practice">
+  <div class="sheet row">
+    <div class="col">
+      <h2>Experience</h2>
+      <ol class="record">
+        <li>
+          <span class="when">2022 · 2026</span>
+          <span>
+            <span class="what">Research Associate and Doctoral Candidate</span>
+            <span class="where">Chair of Energy Efficient and Sustainable Design and Building, Technical University of Munich</span>
+            <span class="note">
+              Led two publicly funded research projects, supervised master's theses, and
+              taught in both English and German curricula. Chair of Professor Werner Lang,
+              Vice President for Sustainable Transformation.
+            </span>
+          </span>
+        </li>
+        <li>
+          <span class="when">2020 · 2021</span>
+          <span>
+            <span class="what">Working Student, Construction, Design and Sustainability</span>
+            <span class="where">Siemens Energy AG</span>
+          </span>
+        </li>
+      </ol>
     </div>
+  </div>
+</section>
 
-    <figure class="plate" style="margin-top:2.2rem">
-      <video controls preload="metadata" playsinline
-             poster="assets/graphdlca-poster.jpg" width="960" height="502">
-        <source src="assets/graphdlca-gui.mp4" type="video/mp4">
-        Your browser cannot play embedded video.
-        <a href="assets/graphdlca-gui.mp4">Download the recording</a>.
-      </video>
-      <figcaption>
-        Walkthrough of the graphical user interface: inventory intake, component
-        modeling in the graph, configuration of dynamic factors, and exploration of
-        life cycle results. Screen recording, roughly 18 minutes, without commentary.
-      </figcaption>
-    </figure>
+<!-- ============================ EDUCATION ============================ -->
+<section id="education">
+  <div class="sheet row">
+    <div class="col">
+      <h2>Education</h2>
+      <ol class="record">
+        <li>
+          <span class="when">2022 · 2026</span>
+          <span>
+            <span class="what">Dr.-Ing.</span>
+            <span class="where">Technical University of Munich, Chair of Energy Efficient and Sustainable Design and Building</span>
+            <span class="note">Supervisor: Professor Werner Lang. Passed <em>magna cum laude</em>.</span>
+          </span>
+        </li>
+        <li>
+          <span class="when">2019 · 2021</span>
+          <span>
+            <span class="what">M.Sc. Resource Efficient and Sustainable Building</span>
+            <span class="where">Technical University of Munich</span>
+          </span>
+        </li>
+        <li>
+          <span class="when">2014 · 2019</span>
+          <span>
+            <span class="what">B.A. Architecture</span>
+            <span class="where">Technical University of Munich</span>
+          </span>
+        </li>
+        <li>
+          <span class="when">2016 · 2017</span>
+          <span>
+            <span class="what">Exchange year, B.A. Architecture</span>
+            <span class="where">École Polytechnique Fédérale de Lausanne</span>
+          </span>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
 
-    <div class="row">
-      <div class="col">
-        <ul class="notes">
-          <li><b>Automated dynamic assessment.</b> Replacement cycles and impact factors that change over time are resolved by traversing the graph.</li>
-          <li><b>Reusable inventories.</b> Component data is entered once and queried again across scenarios and projects.</li>
-          <li><b>Scenario comparison.</b> Design variants are evaluated without entering the inventory again.</li>
-          <li><b>Interactive interface.</b> Results can be explored by readers who are not specialists in life cycle assessment.</li>
-        </ul>
-        <p style="font-size:.87rem; color:var(--text-faint); margin-top:1.4rem">
-          Published as: Zong, C.; Banihashemi, F.; Petzold, F.; Lang, W.
-          <em>Graph-based Database Structure and Calculation Framework for Automated
-          Dynamic Life Cycle Assessment of Buildings</em>, Automation in Construction, 2026.
-        </p>
+<!-- ============================ TEACHING ============================ -->
+<section id="teaching">
+  <div class="sheet row">
+    <div class="col">
+      <h2>Teaching</h2>
+      <table class="tt">
+        <tbody>
+          <tr>
+            <td class="a">System Effects and Interdependencies of Sustainable Planning in Civil Engineering</td>
+            <td class="b">Teaching assistant · English</td>
+            <td class="c">2025 · 2026</td>
+          </tr>
+          <tr>
+            <td class="a">Introduction to Scientific Writing</td>
+            <td class="b">Lecturer · English</td>
+            <td class="c">2023 · 2026</td>
+          </tr>
+          <tr>
+            <td class="a">Sustainable Building and Ecological Building, basic modules</td>
+            <td class="b">Teaching assistant · German</td>
+            <td class="c">2022 · 2026</td>
+          </tr>
+          <tr>
+            <td class="a">Sustainable Lighting Technology</td>
+            <td class="b">Lecturer · English</td>
+            <td class="c">2022 · 2025</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PROJECTS ============================ -->
+<section id="projects">
+  <div class="sheet row">
+    <div class="col" style="max-width:none">
+      <div class="slider-head">
+        <h2 style="margin:0">Funded research projects</h2>
+        <span class="hint">Scroll →</span>
+      </div>
+      <div class="slider" tabindex="0" role="group" aria-label="Funded research projects, scrollable">
+        <div>
+          <span class="when">2022 · 2025</span>
+          <h3>CircularGreenSimCity</h3>
+          <p>Holistic life cycle assessment of urban districts. Funded by the German Federal Ministry for Economic Affairs and Climate Action.</p>
+          <p class="plink"><a href="https://circulargreensimcity.hft-stuttgart.de" target="_blank" rel="noopener">Graphical user interface &#8599;</a></p>
+        </div>
+        <div>
+          <span class="when">2022 · 2024</span>
+          <h3>EarlyBIM2</h3>
+          <p>Knowledge database and machine learning assistance for performance oriented building. Funded by the German Research Foundation.</p>
+          <p class="plink"><a href="https://zenodo.org/records/10962088" target="_blank" rel="noopener">EarlyData database on Zenodo &#8599;</a></p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 </div>
-
 <!-- ============================ PUBLICATIONS ============================ -->
 <div class="page" data-page="publications">
 <section id="publications">
@@ -851,138 +928,63 @@
   </div>
 </section>
 </div>
-
-<!-- ============================ PRACTICE ============================ -->
-<div class="page" data-page="experience">
-<section id="practice">
-  <div class="sheet row">
-    <div class="col">
-      <h2>Experience</h2>
-      <ol class="record">
-        <li>
-          <span class="when">2022 · 2026</span>
-          <span>
-            <span class="what">Research Associate and Doctoral Candidate</span>
-            <span class="where">Chair of Energy Efficient and Sustainable Design and Building, Technical University of Munich</span>
-            <span class="note">
-              Led two publicly funded research projects, supervised master's theses, and
-              taught in both English and German curricula. Chair of Professor Werner Lang,
-              Vice President for Sustainable Transformation.
-            </span>
-          </span>
-        </li>
-        <li>
-          <span class="when">2020 · 2021</span>
-          <span>
-            <span class="what">Working Student, Construction, Design and Sustainability</span>
-            <span class="where">Siemens Energy AG</span>
-          </span>
-        </li>
-      </ol>
-    </div>
-  </div>
-</section>
-
-<!-- ============================ EDUCATION ============================ -->
-<section id="education">
-  <div class="sheet row">
-    <div class="col">
-      <h2>Education</h2>
-      <ol class="record">
-        <li>
-          <span class="when">2022 · 2026</span>
-          <span>
-            <span class="what">Dr.-Ing.</span>
-            <span class="where">Technical University of Munich, Chair of Energy Efficient and Sustainable Design and Building</span>
-            <span class="note">Supervisor: Professor Werner Lang. Passed <em>magna cum laude</em>.</span>
-          </span>
-        </li>
-        <li>
-          <span class="when">2019 · 2021</span>
-          <span>
-            <span class="what">M.Sc. Resource Efficient and Sustainable Building</span>
-            <span class="where">Technical University of Munich</span>
-          </span>
-        </li>
-        <li>
-          <span class="when">2014 · 2019</span>
-          <span>
-            <span class="what">B.A. Architecture</span>
-            <span class="where">Technical University of Munich</span>
-          </span>
-        </li>
-        <li>
-          <span class="when">2016 · 2017</span>
-          <span>
-            <span class="what">Exchange year, B.A. Architecture</span>
-            <span class="where">École Polytechnique Fédérale de Lausanne</span>
-          </span>
-        </li>
-      </ol>
-    </div>
-  </div>
-</section>
-
-<!-- ============================ TEACHING ============================ -->
-<section id="teaching">
-  <div class="sheet row">
-    <div class="col">
-      <h2>Teaching</h2>
-      <table class="tt">
-        <tbody>
-          <tr>
-            <td class="a">System Effects and Interdependencies of Sustainable Planning in Civil Engineering</td>
-            <td class="b">Teaching assistant · English</td>
-            <td class="c">2025 · 2026</td>
-          </tr>
-          <tr>
-            <td class="a">Introduction to Scientific Writing</td>
-            <td class="b">Lecturer · English</td>
-            <td class="c">2023 · 2026</td>
-          </tr>
-          <tr>
-            <td class="a">Sustainable Building and Ecological Building, basic modules</td>
-            <td class="b">Teaching assistant · German</td>
-            <td class="c">2022 · 2026</td>
-          </tr>
-          <tr>
-            <td class="a">Sustainable Lighting Technology</td>
-            <td class="b">Lecturer · English</td>
-            <td class="c">2022 · 2025</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- ============================ PROJECTS ============================ -->
-<section id="projects">
-  <div class="sheet row">
-    <div class="col" style="max-width:none">
-      <div class="slider-head">
-        <h2 style="margin:0">Funded research projects</h2>
-        <span class="hint">Scroll →</span>
+<!-- ============================ GRAPHDLCA ============================ -->
+<div class="page" data-page="graphdlca">
+<section id="graphdlca">
+  <div class="sheet">
+    <div class="row">
+      <div class="col">
+        <h2>GraphDLCA</h2>
+        <p class="stmt">
+          A graph database structure and calculation framework for automated dynamic
+          life cycle assessment of buildings.
+        </p>
+        <p>
+          GraphDLCA reorganises the building inventory as a property graph rather than
+          a spreadsheet. Components, materials, replacement events and impact factors
+          become nodes. The relationships between them, in composition and in time,
+          become edges that can be traversed.
+        </p>
+        <p>
+          Because time is modelled inside the graph instead of being added to a static
+          calculation afterwards, a dynamic assessment becomes a query rather than a
+          manual rebuild.
+        </p>
       </div>
-      <div class="slider" tabindex="0" role="group" aria-label="Funded research projects, scrollable">
-        <div>
-          <span class="when">2022 · 2025</span>
-          <h3>CircularGreenSimCity</h3>
-          <p>Holistic life cycle assessment of urban districts. Funded by the German Federal Ministry for Economic Affairs and Climate Action.</p>
-          <p class="plink"><a href="https://circulargreensimcity.hft-stuttgart.de" target="_blank" rel="noopener">Graphical user interface &#8599;</a></p>
-        </div>
-        <div>
-          <span class="when">2022 · 2024</span>
-          <h3>EarlyBIM2</h3>
-          <p>Knowledge database and machine learning assistance for performance oriented building. Funded by the German Research Foundation.</p>
-          <p class="plink"><a href="https://zenodo.org/records/10962088" target="_blank" rel="noopener">EarlyData database on Zenodo &#8599;</a></p>
-        </div>
+    </div>
+
+    <figure class="plate" style="margin-top:2.2rem">
+      <video controls preload="metadata" playsinline
+             poster="assets/graphdlca-poster.jpg" width="960" height="502">
+        <source src="assets/graphdlca-gui.mp4" type="video/mp4">
+        Your browser cannot play embedded video.
+        <a href="assets/graphdlca-gui.mp4">Download the recording</a>.
+      </video>
+      <figcaption>
+        Walkthrough of the graphical user interface: inventory intake, component
+        modeling in the graph, configuration of dynamic factors, and exploration of
+        life cycle results. Screen recording, roughly 18 minutes, without commentary.
+      </figcaption>
+    </figure>
+
+    <div class="row">
+      <div class="col">
+        <ul class="notes">
+          <li><b>Automated dynamic assessment.</b> Replacement cycles and impact factors that change over time are resolved by traversing the graph.</li>
+          <li><b>Reusable inventories.</b> Component data is entered once and queried again across scenarios and projects.</li>
+          <li><b>Scenario comparison.</b> Design variants are evaluated without entering the inventory again.</li>
+          <li><b>Interactive interface.</b> Results can be explored by readers who are not specialists in life cycle assessment.</li>
+        </ul>
+        <p style="font-size:.87rem; color:var(--text-faint); margin-top:1.4rem">
+          Published as: Zong, C.; Banihashemi, F.; Petzold, F.; Lang, W.
+          <em>Graph-based Database Structure and Calculation Framework for Automated
+          Dynamic Life Cycle Assessment of Buildings</em>, Automation in Construction, 2026.
+        </p>
       </div>
     </div>
   </div>
 </section>
 </div>
-
 <div class="page" data-page="honors">
 
 
@@ -1009,7 +1011,6 @@
   </div>
 </section>
 </div>
-
 <!-- ============================ ELSEWHERE ============================ -->
 <div class="page" data-page="contact">
 <section id="elsewhere">
@@ -1049,7 +1050,6 @@
   </div>
 </section>
 </div>
-
 </main>
 
 <dialog id="figbox" aria-labelledby="fb-title">
