@@ -559,7 +559,7 @@ async function load(){
 
   var out = { start:start, end:isoDaysAgo(0), series:[], pages:[], refs:[], geo:[], events:[],
               totalViews:0, totalVisitors:0, hasUniques:false, failed:[], notes:[],
-              totalSource:'', rawTotal:null, eventTotal:null, sectionTotal:0,
+              totalSource:'', rawTotal:null, eventTotal:null,
               systems:[], browsers:[], languages:[], visitorScoped:false };
 
   /* One request per panel. The forms below are the ones this GoatCounter
@@ -594,9 +594,8 @@ async function load(){
     var total = h.count != null ? Number(h.count) : agg.views;
     var isInteraction = !!h.event && /^\/?(download-|video-play)/.test(path);
     (isInteraction ? out.events : out.pages).push({ name:path, count:total });
-    /* remember which paths are real pageviews (landing plus section views,
-       which are counted as pageviews now) so the breakdowns below exclude
-       only the download/video interaction events */
+    /* remember which paths are genuine page loads so the breakdowns below
+       can be restricted to visitors rather than counting section events too */
     if(!h.event && h.path_id != null) pageIds.push(h.path_id);
 
     if(Array.isArray(h.stats)){
@@ -620,9 +619,8 @@ async function load(){
     }
     out.series = filled;
   }
-  /* older section views were recorded as events on the same (or '#/'-style)
-     path that new pageview-style section views use — merge them so each
-     section appears once in the chart */
+  /* the same section can appear under a '#/'-style pageview path and a
+     '#'-style event path — merge them so it shows once in the chart */
   var mergedPages = {};
   out.pages.forEach(function(p){
     var key = p.name.replace('#/', '#');
@@ -631,10 +629,6 @@ async function load(){
   out.pages = Object.keys(mergedPages).map(function(k){
     return { name:k, count:mergedPages[k] };
   });
-  /* section views = every hash path, however it was recorded */
-  out.sectionTotal = out.pages
-    .filter(function(p){ return p.name.indexOf('#') !== -1; })
-    .reduce(function(s,p){ return s+p.count; }, 0);
   out.pages.sort(function(a,b){ return b.count-a.count; });
   out.events.sort(function(a,b){ return b.count-a.count; });
 
@@ -663,9 +657,8 @@ async function load(){
                   : seriesSum ? 'daily series'
                   : pathSum ? 'sum of paths' : 'none';
 
-  /* Restrict the breakdowns to pageview paths when we know them — landing
-     and section views both count, only the download/video events are left
-     out of the referrer, location, system, browser and language figures. */
+  /* Restrict the breakdowns to page-load paths when we know them, so the
+     figures count visits rather than visits plus their section events. */
   var visitorFilter = pageIds.length ? {include_paths: pageIds} : null;
   function withFilter(base){
     if(!visitorFilter) return base;
@@ -1132,16 +1125,16 @@ function render(){
     (!state.demo && d.totalSource && d.totalSource !== 'stats/total' && d.totalViews
        ? ' · via ' + d.totalSource : '');
 
-  /* section views: pageviews on hash paths, fired when a visitor opens a tab
-     on the site (older data recorded these as events — both are summed). */
+  /* section views: the events fired when a visitor opens a tab on the site.
+     Shown in their own right rather than only subtracted from the headline. */
   var evTotal = state.demo
       ? Math.round((d.series||[]).reduce(function(s,x){ return s+x.views; }, 0) * 2.4)
-      : (d.sectionTotal || 0);
+      : (d.eventTotal || 0);
   if(evTotal > 0){
     $('k-visitors').textContent = fmt(evTotal);
-    var share = d.totalViews ? (evTotal / d.totalViews) : 0;
-    $('k-visitors-note').textContent = (share && !state.demo)
-      ? Math.round(share*100) + '% of all visits'
+    var perVisit = d.totalViews ? (evTotal / d.totalViews) : 0;
+    $('k-visitors-note').textContent = perVisit
+      ? perVisit.toFixed(1) + ' per visit'
       : 'tab openings';
   }else{
     $('k-visitors').textContent = '0';

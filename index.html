@@ -1266,12 +1266,13 @@
      GC_COUNT_TOKEN: an API token with ONLY the "Record pageviews"
      permission (GoatCounter → your username → API → Add token).
      With it, hits are sent through the count API with sessions
-     disabled, so EVERY view — also repeat views from the same
-     visitor — counts as its own visit and shows up in Referrers,
-     Locations, Browsers and the other panels, in step with the
-     Visits number. Without it the standard script is used and
-     GoatCounter groups repeat views from one visitor into a
-     single visit on those panels.
+     disabled, so every page load — also repeat visits from the
+     same visitor — shows up in Referrers, Locations, Browsers
+     and the other panels, in step with the Visits number.
+     Section opens stay separate events and do not add to Visits.
+     Without it the standard script is used and GoatCounter groups
+     repeat views from one visitor into a single visit on those
+     panels.
      (This token is visible to anyone reading the page source; it
      can only record pageviews, nothing else — do NOT paste the
      dashboard's read-statistics token here.)
@@ -1301,20 +1302,20 @@
       }, { once:true });
     }
     /* record each page the visitor opens (sections are tabs, not scroll
-       targets) as a full pageview — one visit each — so it feeds every
-       dashboard breakdown, not the event list */
+       targets) as an event, kept separate from the visit count */
     window.__gcPage = function(name){
-      send('/#' + name, 'Page: ' + name, false);
+      send('/#' + name, 'Page: ' + name, true);
     };
     window.__gcPage(location.hash.replace(/^#\/?/, '') || 'home');
   }
 
   var token = window.GC_COUNT_TOKEN;
   if(token && window.fetch){
-    /* count API with no_sessions: every hit is its own visit, so the
-       location/referrer/browser panels move together with Visits */
+    /* count API with no_sessions: every page load is its own visit, so the
+       location/referrer/browser panels move together with Visits — also
+       for repeat visits from the same visitor */
     var api = 'https://' + code + '.goatcounter.com/api/v0/count';
-    init(function(path, title, isEvent){
+    var send = function(path, title, isEvent){
       try{
         fetch(api, {
           method: 'POST',
@@ -1337,12 +1338,16 @@
           })
         })['catch'](function(){});
       }catch(e){}
-    });
+    };
+    /* the visit itself: one pageview per page load, like the standard
+       script's automatic count */
+    send(location.pathname + location.hash, document.title, false);
+    init(send);
   }else{
-    /* fallback: official script; GoatCounter then de-duplicates repeat
-       views from one visitor into a single visit on the breakdown panels */
-    window.goatcounter = { no_onload: true };  /* the landing section is
-       counted through __gcPage, so the automatic count would double it */
+    /* fallback: official script with its automatic pageview on load;
+       GoatCounter then de-duplicates repeat views from one visitor into
+       a single visit on the breakdown panels */
+    window.goatcounter = { path: function(p){ return p + location.hash; } };
     var s = document.createElement('script');
     s.async = true;
     s.src = '//gc.zgo.at/count.js';
